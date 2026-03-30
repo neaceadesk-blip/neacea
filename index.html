@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anamnesi Nutrizionale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --verde:      #1a3a2a;
+  --verde-mid:  #2a5c40;
+  --verde-light:#3d7a57;
+  --verde-pale: #e8f0eb;
+  --verde-bg:   #f2f6f3;
+  --gold:       #c9a84c;
+  --gold-pale:  #fdf8ee;
+  --border:     #d4e0d8;
+  --text:       #1a2820;
+  --text-mid:   #4a5e54;
+  --text-light: #8fa89a;
+  --white:      #ffffff;
+  --radius:     12px;
+  --shadow:     0 2px 20px rgba(26,58,42,.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--verde-bg); color: var(--text); min-height: 100vh; }
+
+/* ── HERO ── */
+.hero { background: var(--verde); padding: 0; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 50%, rgba(201,168,76,.12) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(61,122,87,.3) 0%, transparent 50%); }
+.hero-inner { position: relative; max-width: 760px; margin: 0 auto; padding: 52px 32px 48px; }
+.hero-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+.hero-logo img { height: 36px; filter: brightness(0) invert(1); opacity: .9; }
+.hero-tag { display: inline-block; background: rgba(201,168,76,.2); border: 1px solid rgba(201,168,76,.3); color: var(--gold); font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; padding: 4px 14px; border-radius: 20px; margin-bottom: 18px; }
+.hero-title { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 500; color: white; line-height: 1.15; margin-bottom: 14px; }
+.hero-title em { font-style: italic; color: rgba(255,255,255,.7); }
+.hero-desc { font-size: 15px; color: rgba(255,255,255,.6); line-height: 1.7; max-width: 520px; }
+.hero-steps { display: flex; gap: 20px; margin-top: 28px; flex-wrap: wrap; }
+.hero-step { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,.5); }
+.hero-step-num { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: rgba(255,255,255,.6); flex-shrink: 0; }
+.hero-step.done .hero-step-num { background: var(--gold); border-color: var(--gold); color: white; }
+.progress-bar-wrap { background: rgba(255,255,255,.08); height: 3px; position: relative; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, var(--gold), rgba(201,168,76,.5)); transition: width .5s ease; }
+
+/* ── LAYOUT ── */
+.form-wrap { max-width: 760px; margin: 0 auto; padding: 40px 32px 80px; }
+.form-section { display: none; animation: fadeIn .3s ease; }
+.form-section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.section-header { margin-bottom: 32px; }
+.section-number { font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 8px; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 500; color: var(--verde); margin-bottom: 6px; }
+.section-desc { font-size: 14px; color: var(--text-light); line-height: 1.6; }
+
+/* ── CARD ── */
+.card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin-bottom: 20px; box-shadow: var(--shadow); }
+.card-title { font-size: 12px; font-weight: 700; color: var(--verde); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--verde-pale); }
+
+/* ── GRIGLIA ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.col-full { grid-column: 1 / -1; }
+
+/* ── CAMPI ── */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 11px; font-weight: 700; color: var(--text-mid); text-transform: uppercase; letter-spacing: .07em; }
+.field label .req { color: var(--gold); margin-left: 2px; }
+.field input, .field select, .field textarea { background: var(--verde-bg); border: 1.5px solid var(--border); border-radius: 9px; padding: 11px 14px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; width: 100%; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--verde-light); box-shadow: 0 0 0 3px rgba(26,58,42,.07); background: white; }
+.field input.error, .field select.error, .field textarea.error { border-color: #e07070; box-shadow: 0 0 0 3px rgba(224,112,112,.08); }
+.field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+.field select option { background: white; }
+.field-hint { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+/* ── CHECK/RADIO ── */
+.check-group { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.check-group.inline { flex-direction: row; flex-wrap: wrap; gap: 10px; }
+.check-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 9px; cursor: pointer; transition: all .15s; background: var(--verde-bg); }
+.check-item:hover { border-color: var(--verde-light); background: white; }
+.check-item.selected { border-color: var(--verde); background: var(--verde-pale); }
+.check-item input[type=checkbox], .check-item input[type=radio] { display: none; }
+.check-box { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border); background: white; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; transition: all .15s; }
+.check-item.selected .check-box { background: var(--verde); border-color: var(--verde); }
+.check-item.selected .check-box::after { content: '✓'; }
+.radio-box { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); background: white; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+.check-item.selected .radio-box { border-color: var(--verde); }
+.check-item.selected .radio-box::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--verde); display: block; }
+.check-label { font-size: 14px; color: var(--text); font-weight: 500; line-height: 1.4; }
+.check-label small { display: block; font-size: 12px; color: var(--text-light); font-weight: 400; margin-top: 2px; }
+
+/* ── SEZIONI FUNZIONALI ── */
+.functional-banner { display: none; background: linear-gradient(135deg, var(--gold-pale), rgba(201,168,76,.08)); border: 1.5px solid rgba(201,168,76,.3); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.functional-banner.show { display: flex; gap: 16px; align-items: flex-start; animation: fadeIn .4s ease; }
+.functional-banner-icon { font-size: 24px; flex-shrink: 0; }
+.functional-banner h4 { font-size: 14px; font-weight: 700; color: var(--verde); margin-bottom: 4px; }
+.functional-banner p { font-size: 13px; color: var(--text-mid); line-height: 1.6; }
+.functional-section { display: none; border-left: 3px solid var(--gold); padding-left: 20px; margin-top: 16px; }
+.functional-section.show { display: block; animation: fadeIn .4s ease; }
+.functional-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--gold-pale); border: 1px solid rgba(201,168,76,.3); color: rgba(150,100,20,.8); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; }
+
+/* ── SCALE ── */
+.scale-wrap { margin-top: 4px; }
+.scale-track { display: flex; gap: 6px; margin-bottom: 8px; }
+.scale-btn { flex: 1; height: 36px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--verde-bg); cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-mid); transition: all .15s; font-family: 'DM Sans', sans-serif; }
+.scale-btn:hover { border-color: var(--verde); color: var(--verde); }
+.scale-btn.active { background: var(--verde); border-color: var(--verde); color: white; }
+.scale-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-light); }
+
+/* ── UPLOAD ── */
+.upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 28px; text-align: center; cursor: pointer; transition: all .2s; background: var(--verde-bg); }
+.upload-zone:hover { border-color: var(--verde-mid); background: var(--verde-pale); }
+.upload-zone.has-file { border-color: var(--verde); background: var(--verde-pale); border-style: solid; }
+.upload-icon { font-size: 28px; margin-bottom: 10px; }
+.upload-title { font-size: 14px; font-weight: 700; color: var(--verde); margin-bottom: 4px; }
+.upload-sub { font-size: 12px; color: var(--text-light); }
+.upload-file-name { font-size: 13px; font-weight: 600; color: var(--verde); margin-top: 8px; }
+
+/* ── NAV ── */
+.nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.btn-back { background: none; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 24px; font-size: 14px; font-weight: 600; color: var(--text-mid); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s; }
+.btn-back:hover { border-color: var(--verde); color: var(--verde); }
+.btn-next { background: var(--verde); color: white; border: none; border-radius: 10px; padding: 13px 32px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s; }
+.btn-next:hover { background: var(--verde-mid); }
+.btn-submit { background: linear-gradient(135deg, var(--verde-mid), var(--verde)); color: white; border: none; border-radius: 10px; padding: 15px 40px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s; box-shadow: 0 4px 20px rgba(26,58,42,.25); }
+.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(26,58,42,.32); }
+
+/* ── ERRORI ── */
+.err-msg { font-size: 11px; color: #c0392b; margin-top: 4px; display: none; }
+.err-msg.show { display: block; }
+
+/* ── SUCCESS ── */
+#success-screen { display: none; text-align: center; padding: 80px 32px; max-width: 560px; margin: 0 auto; }
+#success-screen.show { display: block; animation: fadeIn .5s ease; }
+.success-icon { width: 72px; height: 72px; background: var(--verde-pale); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 24px; }
+.success-title { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 500; color: var(--verde); margin-bottom: 12px; }
+.success-desc { font-size: 15px; color: var(--text-mid); line-height: 1.7; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .hero-title { font-size: 30px; }
+  .form-wrap { padding: 24px 16px 60px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .hero-steps { display: none; }
+  .card { padding: 20px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-logo">
+      <img src="https://nicolad76.sg-host.com/wp-content/uploads/2026/02/Logo-neacea-bianco-pittogramma.png" alt="Neacea Studio" style="height:38px;opacity:.9;">
+    </div>
+    <div class="hero-tag">Scheda Nutrizionale</div>
+    <div class="hero-title">Il tuo percorso<br><em>inizia da qui</em></div>
+    <div class="hero-desc">Compila questa scheda prima della tua prima visita. Le informazioni permetteranno di costruire un percorso nutrizionale su misura.</div>
+    <div class="hero-steps">
+      <div class="hero-step done" id="step-ind-1"><div class="hero-step-num">1</div>Dati personali</div>
+      <div class="hero-step" id="step-ind-2"><div class="hero-step-num">2</div>Stile di vita</div>
+      <div class="hero-step" id="step-ind-3"><div class="hero-step-num">3</div>Alimentazione</div>
+      <div class="hero-step" id="step-ind-4"><div class="hero-step-num">4</div>Salute</div>
+      <div class="hero-step" id="step-ind-5"><div class="hero-step-num">5</div>Obiettivi</div>
+      <div class="hero-step" id="step-ind-6"><div class="hero-step-num">6</div>Conclusione</div>
+    </div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progress-bar" style="width:16.6%"></div>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="form-wrap" id="form-main">
+
+<!-- ══════════════════════════════════════════════════
+     SEZIONE 1 — DATI PERSONALI
+══════════════════════════════════════════════════ -->
+<div class="form-section active" id="sec-1">
+  <div class="section-header">
+    <div class="section-number">Sezione 01 / 06</div>
+    <div class="section-title">Dati Personali</div>
+    <div class="section-desc">Informazioni anagrafiche e fisiche di base.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Anagrafica</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Nome <span class="req">*</span></label>
+        <input type="text" id="f-nome" name="nome" placeholder="Mario" required>
+      </div>
+      <div class="field">
+        <label>Cognome <span class="req">*</span></label>
+        <input type="text" id="f-cognome" name="cognome" placeholder="Rossi" required>
+      </div>
+      <div class="field">
+        <label>Data di nascita <span class="req">*</span></label>
+        <input type="date" id="f-dob" name="data_nascita" required>
+      </div>
+      <div class="field">
+        <label>Sesso biologico</label>
+        <select id="f-sesso" name="sesso">
+          <option value="">— seleziona —</option>
+          <option value="Maschile">Maschile</option>
+          <option value="Femminile">Femminile</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="f-email" name="email" placeholder="mario@email.it" required>
+      </div>
+      <div class="field">
+        <label>Telefono</label>
+        <input type="tel" id="f-telefono" name="telefono" placeholder="+39 333 123 4567">
+      </div>
+      <div class="field">
+        <label>Codice Fiscale</label>
+        <input type="text" id="f-cf" name="codice_fiscale" placeholder="RSSMRA80A01H501U" maxlength="16" style="text-transform:uppercase;">
+      </div>
+      <div class="field col-full">
+        <label>Professione</label>
+        <input type="text" id="f-lavoro" name="professione" placeholder="es. Impiegato, libero professionista, sportivo...">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dati Fisici</div>
+    <div class="grid-3">
+      <div class="field">
+        <label>Altezza (cm) <span class="req">*</span></label>
+        <input type="number" id="f-altezza" name="altezza" placeholder="170" min="100" max="250" required>
+      </div>
+      <div class="field">
+        <label>Peso attuale (kg)</label>
+        <input type="number" id="f-peso" name="peso_attuale" placeholder="70" step="0.1">
+      </div>
+      <div class="field">
+        <label>Peso obiettivo (kg)</label>
+        <input type="number" id="f-peso-target" name="peso_obiettivo" placeholder="65" step="0.1">
+        <div class="field-hint">Se applicabile</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <div></div>
+    <button class="btn-next" onclick="nextSection(1)">Continua →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SEZIONE 2 — STILE DI VITA
+══════════════════════════════════════════════════ -->
+<div class="form-section" id="sec-2">
+  <div class="section-header">
+    <div class="section-number">Sezione 02 / 06</div>
+    <div class="section-title">Stile di Vita</div>
+    <div class="section-desc">Attività fisica, lavoro, sonno e routine quotidiana.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Attività Fisica</div>
+    <div class="field" style="margin-bottom:20px;">
+      <label>Pratichi attività fisica regolare?</label>
+      <div class="check-group inline" id="sport-check">
+        <label class="check-item"><input type="radio" name="sport" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+        <label class="check-item"><input type="radio" name="sport" value="Occasionale"><div class="radio-box"></div><span class="check-label">Occasionale<small>1-2 volte/mese</small></span></label>
+        <label class="check-item"><input type="radio" name="sport" value="Regolare"><div class="radio-box"></div><span class="check-label">Regolare<small>1-3 volte/sett.</small></span></label>
+        <label class="check-item"><input type="radio" name="sport" value="Frequente"><div class="radio-box"></div><span class="check-label">Frequente<small>4+ volte/sett.</small></span></label>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Sport o attività praticata</label>
+        <input type="text" id="f-sport" name="sport_tipo" placeholder="es. Palestra, corsa, nuoto...">
+      </div>
+      <div class="field">
+        <label>Ore di allenamento settimanali</label>
+        <input type="number" id="f-ore-sport" name="ore_sport_settimana" placeholder="4" step="0.5">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Lavoro e Quotidianità</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Tipo di lavoro</label>
+        <select id="f-tipo-lavoro" name="tipo_lavoro">
+          <option value="">— seleziona —</option>
+          <option value="Sedentario">Sedentario (ufficio, scrivania)</option>
+          <option value="In piedi">In piedi (commesso, operaio)</option>
+          <option value="Fisicamente pesante">Fisicamente pesante</option>
+          <option value="Turni variabili">Turni variabili / notturni</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Ore di sonno per notte</label>
+        <select id="f-sonno" name="ore_sonno">
+          <option value="">— seleziona —</option>
+          <option value="Meno di 5 ore">Meno di 5 ore</option>
+          <option value="5-6 ore">5-6 ore</option>
+          <option value="6-7 ore">6-7 ore</option>
+          <option value="7-8 ore">7-8 ore</option>
+          <option value="Più di 8 ore">Più di 8 ore</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Qualità del sonno percepita</label>
+        <div class="check-group inline" id="qualita-sonno-check">
+          <label class="check-item"><input type="radio" name="qualita_sonno" value="Bassa"><div class="radio-box"></div><span class="check-label">Bassa</span></label>
+          <label class="check-item"><input type="radio" name="qualita_sonno" value="Media"><div class="radio-box"></div><span class="check-label">Media</span></label>
+          <label class="check-item"><input type="radio" name="qualita_sonno" value="Alta"><div class="radio-box"></div><span class="check-label">Alta</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Risvegli notturni frequenti?</label>
+        <div class="check-group inline" id="risvegli-check">
+          <label class="check-item"><input type="radio" name="risvegli_notturni" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+          <label class="check-item"><input type="radio" name="risvegli_notturni" value="Sì"><div class="radio-box"></div><span class="check-label">Sì</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Passi giornalieri stimati</label>
+        <select id="f-passi-giornalieri" name="passi_giornalieri">
+          <option value="">— seleziona —</option>
+          <option value="meno_2000">Meno di 2.000</option>
+          <option value="2000_5000">2.000 – 5.000 (sedentario)</option>
+          <option value="5000_8000">5.000 – 8.000 (lievemente attivo)</option>
+          <option value="8000_12000">8.000 – 12.000 (attivo)</option>
+          <option value="oltre_12000">Oltre 12.000 (molto attivo)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Livello di sedentarietà</label>
+        <div class="check-group inline" id="sedentario-check">
+          <label class="check-item"><input type="radio" name="livello_sedentario" value="Molto"><div class="radio-box"></div><span class="check-label">Molto</span></label>
+          <label class="check-item"><input type="radio" name="livello_sedentario" value="Moderato"><div class="radio-box"></div><span class="check-label">Moderato</span></label>
+          <label class="check-item"><input type="radio" name="livello_sedentario" value="Poco"><div class="radio-box"></div><span class="check-label">Poco</span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Livello di Stress</div>
+    <div class="field">
+      <label>Come valuteresti il tuo livello di stress quotidiano?</label>
+      <div class="scale-wrap">
+        <div class="scale-track" id="stress-scale">
+          <button type="button" class="scale-btn" data-val="1" onclick="setScale('stress',1)">1</button>
+          <button type="button" class="scale-btn" data-val="2" onclick="setScale('stress',2)">2</button>
+          <button type="button" class="scale-btn" data-val="3" onclick="setScale('stress',3)">3</button>
+          <button type="button" class="scale-btn" data-val="4" onclick="setScale('stress',4)">4</button>
+          <button type="button" class="scale-btn" data-val="5" onclick="setScale('stress',5)">5</button>
+          <button type="button" class="scale-btn" data-val="6" onclick="setScale('stress',6)">6</button>
+          <button type="button" class="scale-btn" data-val="7" onclick="setScale('stress',7)">7</button>
+          <button type="button" class="scale-btn" data-val="8" onclick="setScale('stress',8)">8</button>
+          <button type="button" class="scale-btn" data-val="9" onclick="setScale('stress',9)">9</button>
+          <button type="button" class="scale-btn" data-val="10" onclick="setScale('stress',10)">10</button>
+        </div>
+        <div class="scale-labels"><span>Nessuno stress</span><span>Stress estremo</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Routine Reale</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Chi cucina in casa?</label>
+        <input type="text" id="f-chi-cucina" name="chi_cucina" placeholder="es. Io, mia moglie, mangio fuori...">
+      </div>
+      <div class="field">
+        <label>Pasti fuori casa a settimana</label>
+        <input type="number" id="f-pasti-fuori" name="pasti_fuori" placeholder="es. 3" min="0" max="21">
+      </div>
+      <div class="field col-full">
+        <label>Orari tipici dei pasti</label>
+        <textarea id="f-orari-pasti" name="orari_pasti" placeholder="es. Colazione 7:30, pranzo 13:00, cena 20:00..."></textarea>
+      </div>
+      <div class="field">
+        <label>Lavori su turni?</label>
+        <div class="check-group inline" id="turni-check">
+          <label class="check-item"><input type="radio" name="lavoro_turni" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+          <label class="check-item"><input type="radio" name="lavoro_turni" value="Sì"><div class="radio-box"></div><span class="check-label">Sì</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Il weekend cambia la tua routine?</label>
+        <div class="check-group inline" id="weekend-check">
+          <label class="check-item"><input type="radio" name="weekend_diverso" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+          <label class="check-item"><input type="radio" name="weekend_diverso" value="Sì"><div class="radio-box"></div><span class="check-label">Sì</span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn-back" onclick="prevSection(2)">← Indietro</button>
+    <button class="btn-next" onclick="nextSection(2)">Continua →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SEZIONE 3 — ABITUDINI ALIMENTARI
+══════════════════════════════════════════════════ -->
+<div class="form-section" id="sec-3">
+  <div class="section-header">
+    <div class="section-number">Sezione 03 / 06</div>
+    <div class="section-title">Abitudini Alimentari</div>
+    <div class="section-desc">Pasti, preferenze, restrizioni e comportamento alimentare.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Struttura dei Pasti</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Numero di pasti al giorno</label>
+        <select id="f-pasti" name="pasti_giorno">
+          <option value="">— seleziona —</option>
+          <option value="1 pasto">1 pasto</option>
+          <option value="2 pasti">2 pasti</option>
+          <option value="3 pasti">3 pasti</option>
+          <option value="4 pasti + spuntini">4 pasti + spuntini</option>
+          <option value="5+">5+ pasti / spuntini frequenti</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Consumo di acqua giornaliero</label>
+        <select id="f-acqua" name="acqua_giornaliera">
+          <option value="">— seleziona —</option>
+          <option value="Meno di 1 litro">Meno di 1 litro</option>
+          <option value="1-1.5 litri">1-1.5 litri</option>
+          <option value="1.5-2 litri">1.5-2 litri</option>
+          <option value="Più di 2 litri">Più di 2 litri</option>
+        </select>
+      </div>
+      <div class="field col-full">
+        <label>Fai colazione la mattina?</label>
+        <div class="check-group inline" id="colazione-check">
+          <label class="check-item"><input type="radio" name="colazione" value="Sì, sempre"><div class="radio-box"></div><span class="check-label">Sì, sempre</span></label>
+          <label class="check-item"><input type="radio" name="colazione" value="A volte"><div class="radio-box"></div><span class="check-label">A volte</span></label>
+          <label class="check-item"><input type="radio" name="colazione" value="No, mai"><div class="radio-box"></div><span class="check-label">No, mai</span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Preferenze e Regime Alimentare</div>
+    <div class="field" style="margin-bottom:20px;">
+      <label>Segui un regime alimentare specifico?</label>
+      <div class="check-group" id="regime-check">
+        <label class="check-item"><input type="checkbox" name="regime_alimentare" value="Onnivoro"><div class="check-box"></div><span class="check-label">Onnivoro (nessuna restrizione)</span></label>
+        <label class="check-item"><input type="checkbox" name="regime_alimentare" value="Vegetariano"><div class="check-box"></div><span class="check-label">Vegetariano</span></label>
+        <label class="check-item"><input type="checkbox" name="regime_alimentare" value="Vegano"><div class="check-box"></div><span class="check-label">Vegano</span></label>
+        <label class="check-item"><input type="checkbox" name="regime_alimentare" value="Senza glutine"><div class="check-box"></div><span class="check-label">Senza glutine</span></label>
+        <label class="check-item"><input type="checkbox" name="regime_alimentare" value="Senza lattosio"><div class="check-box"></div><span class="check-label">Senza lattosio</span></label>
+        <label class="check-item"><input type="checkbox" name="regime_alimentare" value="Halal/Kosher"><div class="check-box"></div><span class="check-label">Halal / Kosher</span></label>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Alimenti che non mangi o non ti piacciono</label>
+        <textarea id="f-avversioni" name="alimenti_avversioni" placeholder="es. Pesce, fegato, cipolla..."></textarea>
+      </div>
+      <div class="field">
+        <label>Alimenti che ami particolarmente</label>
+        <textarea id="f-preferiti" name="alimenti_preferiti" placeholder="es. Pasta, carne rossa, frutta..."></textarea>
+      </div>
+      <div class="field col-full">
+        <label>Consumi alcol?</label>
+        <select id="f-alcol" name="consumo_alcol">
+          <option value="">— seleziona —</option>
+          <option value="No, mai">No, mai</option>
+          <option value="Occasionalmente">Occasionalmente (qualche volta al mese)</option>
+          <option value="Moderatamente">Moderatamente (1-2 volte/settimana)</option>
+          <option value="Frequentemente">Frequentemente</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Allergie e Intolleranze</div>
+
+    <div class="field" style="margin-bottom:20px;">
+      <label>Celiachia</label>
+      <div class="check-group inline" id="celiachia-check">
+        <label class="check-item"><input type="radio" name="celiachia" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+        <label class="check-item" data-triggers-functional="celiachia"><input type="radio" name="celiachia" value="Sì, diagnosticata"><div class="radio-box"></div><span class="check-label">Sì, diagnosticata<small>Sezione aggiuntiva richiesta</small></span></label>
+        <label class="check-item"><input type="radio" name="celiachia" value="Sensibilità al glutine non celiaca"><div class="radio-box"></div><span class="check-label">Sensibilità al glutine</span></label>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:20px;">
+      <label>Allergie alimentari diagnosticate</label>
+      <div class="check-group" id="allergie-check">
+        <label class="check-item"><input type="checkbox" name="allergia_alimentare" value="Nessuna"><div class="check-box"></div><span class="check-label">Nessuna allergia diagnosticata</span></label>
+        <label class="check-item" data-triggers-functional="nichel"><input type="checkbox" name="allergia_alimentare" value="Nichel (SNAS)"><div class="check-box"></div><span class="check-label">Allergia al nichel (SNAS)<small>Sezione aggiuntiva richiesta</small></span></label>
+        <label class="check-item"><input type="checkbox" name="allergia_alimentare" value="Uova"><div class="check-box"></div><span class="check-label">Allergia alle uova</span></label>
+        <label class="check-item"><input type="checkbox" name="allergia_alimentare" value="Frutta secca"><div class="check-box"></div><span class="check-label">Allergia alla frutta secca</span></label>
+        <label class="check-item"><input type="checkbox" name="allergia_alimentare" value="Arachidi"><div class="check-box"></div><span class="check-label">Allergia alle arachidi</span></label>
+        <label class="check-item"><input type="checkbox" name="allergia_alimentare" value="Crostacei/frutti di mare"><div class="check-box"></div><span class="check-label">Allergia ai crostacei / frutti di mare</span></label>
+        <label class="check-item"><input type="checkbox" name="allergia_alimentare" value="Soia"><div class="check-box"></div><span class="check-label">Allergia alla soia</span></label>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label>Altre allergie</label>
+        <input type="text" id="f-allergia-altro" name="allergia_alimentare_altro" placeholder="es. Senape, sesamo...">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Intolleranze alimentari</label>
+      <div class="check-group" id="intolleranze-check">
+        <label class="check-item"><input type="checkbox" name="intolleranza" value="Nessuna"><div class="check-box"></div><span class="check-label">Nessuna intolleranza</span></label>
+        <label class="check-item"><input type="checkbox" name="intolleranza" value="Lattosio"><div class="check-box"></div><span class="check-label">Intolleranza al lattosio</span></label>
+        <label class="check-item"><input type="checkbox" name="intolleranza" value="Fruttosio"><div class="check-box"></div><span class="check-label">Intolleranza al fruttosio</span></label>
+        <label class="check-item"><input type="checkbox" name="intolleranza" value="Istamina"><div class="check-box"></div><span class="check-label">Intolleranza all'istamina</span></label>
+        <label class="check-item"><input type="checkbox" name="intolleranza" value="Sorbitolo"><div class="check-box"></div><span class="check-label">Intolleranza al sorbitolo</span></label>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label>Altre intolleranze</label>
+        <input type="text" id="f-allergie-altro" name="intolleranza_altro" placeholder="es. Glutammato, solfiti...">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Storia Nutrizionale</div>
+    <div class="field" style="margin-bottom:16px;">
+      <label>Hai già seguito diete o percorsi nutrizionali?</label>
+      <textarea id="f-diete-precedenti" name="diete_precedenti" placeholder="es. Dieta mediterranea, chetogenica, con un nutrizionista..."></textarea>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Cosa ha funzionato?</label>
+        <textarea id="f-cosa-funzionato" name="cosa_ha_funzionato" placeholder="es. Ridurre i carboidrati la sera..."></textarea>
+      </div>
+      <div class="field">
+        <label>Cosa non ha funzionato?</label>
+        <textarea id="f-cosa-non-funzionato" name="cosa_non_ha_funzionato" placeholder="es. Troppo restrittiva, difficile da seguire..."></textarea>
+      </div>
+      <div class="field">
+        <label>Perché hai abbandonato?</label>
+        <textarea id="f-motivo-abbandono" name="motivo_abbandono" placeholder="es. Non vedevo risultati, problemi di salute..."></textarea>
+      </div>
+      <div class="field">
+        <label>Quanto riesci ad aderire a un piano?</label>
+        <select id="f-aderenza-passata" name="aderenza_passata">
+          <option value="">— seleziona —</option>
+          <option value="Molto difficile">Molto difficile — abbandono presto</option>
+          <option value="Difficile">Difficile — qualche settimana</option>
+          <option value="Abbastanza bene">Abbastanza bene — qualche mese</option>
+          <option value="Bene">Bene — riesco a mantenermi</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Fame e Comportamento Alimentare</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Livello di fame al mattino</label>
+        <div class="check-group inline" id="fame-mattino-check">
+          <label class="check-item"><input type="radio" name="fame_mattino" value="Bassa"><div class="radio-box"></div><span class="check-label">Bassa</span></label>
+          <label class="check-item"><input type="radio" name="fame_mattino" value="Media"><div class="radio-box"></div><span class="check-label">Media</span></label>
+          <label class="check-item"><input type="radio" name="fame_mattino" value="Alta"><div class="radio-box"></div><span class="check-label">Alta</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Livello di fame la sera</label>
+        <div class="check-group inline" id="fame-sera-check">
+          <label class="check-item"><input type="radio" name="fame_sera" value="Bassa"><div class="radio-box"></div><span class="check-label">Bassa</span></label>
+          <label class="check-item"><input type="radio" name="fame_sera" value="Media"><div class="radio-box"></div><span class="check-label">Media</span></label>
+          <label class="check-item"><input type="radio" name="fame_sera" value="Alta"><div class="radio-box"></div><span class="check-label">Alta</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Attacchi di fame improvvisa?</label>
+        <div class="check-group inline" id="attacchi-fame-check">
+          <label class="check-item"><input type="radio" name="attacchi_fame" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+          <label class="check-item"><input type="radio" name="attacchi_fame" value="Sì"><div class="radio-box"></div><span class="check-label">Sì</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Mangi per stress / noia / emozioni?</label>
+        <div class="check-group inline" id="fame-nervosa-check">
+          <label class="check-item"><input type="radio" name="fame_nervosa" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+          <label class="check-item"><input type="radio" name="fame_nervosa" value="Sì"><div class="radio-box"></div><span class="check-label">Sì</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Ti capita di perdere il controllo sul cibo?</label>
+        <div class="check-group inline" id="perdita-controllo-check">
+          <label class="check-item"><input type="radio" name="perdita_controllo" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+          <label class="check-item"><input type="radio" name="perdita_controllo" value="Raramente"><div class="radio-box"></div><span class="check-label">Raramente</span></label>
+          <label class="check-item"><input type="radio" name="perdita_controllo" value="Spesso"><div class="radio-box"></div><span class="check-label">Spesso</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Rapporto con dolci e zuccheri</label>
+        <div class="check-group inline" id="rapporto-dolci-check">
+          <label class="check-item"><input type="radio" name="rapporto_dolci" value="Basso"><div class="radio-box"></div><span class="check-label">Basso</span></label>
+          <label class="check-item"><input type="radio" name="rapporto_dolci" value="Medio"><div class="radio-box"></div><span class="check-label">Medio</span></label>
+          <label class="check-item"><input type="radio" name="rapporto_dolci" value="Alto"><div class="radio-box"></div><span class="check-label">Alto</span></label>
+        </div>
+      </div>
+      <div class="field col-full">
+        <label>Situazioni che ti spingono a mangiare fuori piano</label>
+        <input type="text" id="f-situazioni-trigger" name="situazioni_trigger" placeholder="es. Stress lavorativo, uscite sociali, sera in TV...">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Digestione e Alvo</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Gonfiore addominale?</label>
+        <div class="check-group inline" id="gonfiore-check">
+          <label class="check-item"><input type="radio" name="gonfiore" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+          <label class="check-item"><input type="radio" name="gonfiore" value="Sì"><div class="radio-box"></div><span class="check-label">Sì</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Pesantezza dopo i pasti?</label>
+        <div class="check-group inline" id="pesantezza-check">
+          <label class="check-item"><input type="radio" name="pesantezza_post_prandiale" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+          <label class="check-item"><input type="radio" name="pesantezza_post_prandiale" value="Sì"><div class="radio-box"></div><span class="check-label">Sì</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Reflusso o bruciori di stomaco?</label>
+        <div class="check-group inline" id="reflusso-check">
+          <label class="check-item"><input type="radio" name="reflusso" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+          <label class="check-item"><input type="radio" name="reflusso" value="Sì"><div class="radio-box"></div><span class="check-label">Sì</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Alvo regolare?</label>
+        <div class="check-group inline" id="alvo-check">
+          <label class="check-item"><input type="radio" name="alvo_regolare" value="Sì"><div class="radio-box"></div><span class="check-label">Sì</span></label>
+          <label class="check-item"><input type="radio" name="alvo_regolare" value="No"><div class="radio-box"></div><span class="check-label">No</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Frequenza evacuazioni</label>
+        <input type="text" id="f-freq-evacuazioni" name="frequenza_evacuazioni" placeholder="es. 1/giorno, 3/settimana...">
+      </div>
+      <div class="field">
+        <label>Consistenza feci (Scala di Bristol)</label>
+        <select id="f-bristol" name="consistenza_feci">
+          <option value="">— seleziona —</option>
+          <option value="1">1 — Grumi duri (stitichezza severa)</option>
+          <option value="2">2 — Forma a salsiccia grumosa</option>
+          <option value="3">3 — Salsiccia con crepe</option>
+          <option value="4">4 — Salsiccia liscia (ideale)</option>
+          <option value="5">5 — Morbide con bordi netti</option>
+          <option value="6">6 — Pezzi soffici irregolari</option>
+          <option value="7">7 — Liquida (diarrea)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn-back" onclick="prevSection(3)">← Indietro</button>
+    <button class="btn-next" onclick="nextSection(3)">Continua →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SEZIONE 4 — SALUTE CLINICA
+══════════════════════════════════════════════════ -->
+<div class="form-section" id="sec-4">
+  <div class="section-header">
+    <div class="section-number">Sezione 04 / 06</div>
+    <div class="section-title">Salute Clinica</div>
+    <div class="section-desc">Patologie, sintomi, farmaci e storia del peso.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Patologie Diagnosticate</div>
+    <div class="field" style="margin-bottom:16px;">
+      <label>Condizioni con diagnosi medica ufficiale</label>
+      <div class="check-group" id="patologie-check">
+        <label class="check-item"><input type="checkbox" name="patologie_diagnosticate" value="Nessuna"><div class="check-box"></div><span class="check-label">Nessuna patologia diagnosticata</span></label>
+        <label class="check-item" data-triggers-functional="metabolico"><input type="checkbox" name="patologie_diagnosticate" value="Diabete tipo 1 o 2"><div class="check-box"></div><span class="check-label">Diabete tipo 1 o 2<small>Sezione aggiuntiva richiesta</small></span></label>
+        <label class="check-item" data-triggers-functional="metabolico"><input type="checkbox" name="patologie_diagnosticate" value="Insulino-resistenza/prediabete"><div class="check-box"></div><span class="check-label">Insulino-resistenza / prediabete<small>Sezione aggiuntiva richiesta</small></span></label>
+        <label class="check-item"><input type="checkbox" name="patologie_diagnosticate" value="Ipertensione"><div class="check-box"></div><span class="check-label">Ipertensione</span></label>
+        <label class="check-item"><input type="checkbox" name="patologie_diagnosticate" value="Ipercolesterolemia/dislipidemia"><div class="check-box"></div><span class="check-label">Ipercolesterolemia / dislipidemia</span></label>
+        <label class="check-item" data-triggers-functional="ormonale"><input type="checkbox" name="patologie_diagnosticate" value="Ipotiroidismo/ipertiroidismo"><div class="check-box"></div><span class="check-label">Ipotiroidismo / ipertiroidismo<small>Sezione aggiuntiva richiesta</small></span></label>
+        <label class="check-item" data-triggers-functional="ormonale"><input type="checkbox" name="patologie_diagnosticate" value="PCOS"><div class="check-box"></div><span class="check-label">PCOS (ovaio policistico)<small>Sezione aggiuntiva richiesta</small></span></label>
+        <label class="check-item" data-triggers-functional="gi"><input type="checkbox" name="patologie_diagnosticate" value="IBS"><div class="check-box"></div><span class="check-label">Sindrome dell'intestino irritabile (IBS)<small>Sezione aggiuntiva richiesta</small></span></label>
+        <label class="check-item" data-triggers-functional="gi"><input type="checkbox" name="patologie_diagnosticate" value="Reflusso gastroesofageo/gastrite"><div class="check-box"></div><span class="check-label">Reflusso gastroesofageo / gastrite<small>Sezione aggiuntiva richiesta</small></span></label>
+        <label class="check-item"><input type="checkbox" name="patologie_diagnosticate" value="Anemia"><div class="check-box"></div><span class="check-label">Anemia</span></label>
+        <label class="check-item"><input type="checkbox" name="patologie_diagnosticate" value="Osteoporosi/osteopenia"><div class="check-box"></div><span class="check-label">Osteoporosi / osteopenia</span></label>
+        <label class="check-item"><input type="checkbox" name="patologie_diagnosticate" value="Gravidanza/allattamento"><div class="check-box"></div><span class="check-label">Gravidanza / allattamento in corso</span></label>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label>Altre patologie diagnosticate</label>
+        <input type="text" id="f-patologie-diagnosticate-altro" name="patologie_diagnosticate_altro" placeholder="Specifica...">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sintomi Riferiti e Condizioni Sospette</div>
+    <div class="field" style="margin-bottom:16px;">
+      <label>Sintomi presenti ma non ancora diagnosticati</label>
+      <div class="check-group" id="sintomi-check">
+        <label class="check-item"><input type="checkbox" name="sintomi_riferiti" value="Stanchezza cronica"><div class="check-box"></div><span class="check-label">Stanchezza cronica / affaticamento</span></label>
+        <label class="check-item"><input type="checkbox" name="sintomi_riferiti" value="Difficoltà digestive ricorrenti"><div class="check-box"></div><span class="check-label">Difficoltà digestive ricorrenti</span></label>
+        <label class="check-item"><input type="checkbox" name="sintomi_riferiti" value="Difficoltà a dimagrire"><div class="check-box"></div><span class="check-label">Difficoltà a dimagrire nonostante dieta</span></label>
+        <label class="check-item"><input type="checkbox" name="sintomi_riferiti" value="Ritenzione idrica"><div class="check-box"></div><span class="check-label">Ritenzione idrica</span></label>
+        <label class="check-item"><input type="checkbox" name="sintomi_riferiti" value="Ciclo irregolare"><div class="check-box"></div><span class="check-label">Ciclo irregolare / amenorrea</span></label>
+        <label class="check-item"><input type="checkbox" name="sintomi_riferiti" value="Caduta capelli eccessiva"><div class="check-box"></div><span class="check-label">Caduta capelli eccessiva</span></label>
+        <label class="check-item"><input type="checkbox" name="sintomi_riferiti" value="Problemi dermatologici"><div class="check-box"></div><span class="check-label">Pelle secca o problemi dermatologici</span></label>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+      <label>Descrivi altri sintomi</label>
+      <textarea id="f-sintomi-riferiti-altro" name="sintomi_riferiti_altro" placeholder="Descrivi eventuali altri sintomi..."></textarea>
+    </div>
+    <div class="field">
+      <label>Condizioni sospette o in attesa di diagnosi</label>
+      <textarea id="f-condizioni-sospette" name="condizioni_sospette" placeholder="es. Sospetto ipotiroidismo, in attesa di analisi..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Farmaci e Integratori</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Farmaci che assumi regolarmente</label>
+        <textarea id="f-farmaci-attuali" name="farmaci_attuali" placeholder="Nome del farmaco, dose e indicazione..."></textarea>
+      </div>
+      <div class="field">
+        <label>Integratori che assumi</label>
+        <textarea id="f-integratori-attuali" name="integratori_attuali" placeholder="es. Vitamina D, Omega-3, Probiotici..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Storia del Peso</div>
+    <div class="grid-3">
+      <div class="field">
+        <label>Peso massimo raggiunto (kg)</label>
+        <input type="number" id="f-peso-massimo" name="peso_massimo" step="0.1" placeholder="es. 95">
+      </div>
+      <div class="field">
+        <label>Peso minimo da adulto (kg)</label>
+        <input type="number" id="f-peso-minimo" name="peso_minimo" step="0.1" placeholder="es. 62">
+      </div>
+
+      <div class="field col-full">
+        <label>Variazioni di peso recenti (ultimi 12 mesi)</label>
+        <textarea id="f-variazioni-recenti" name="variazioni_recenti" placeholder="es. Perso 5 kg poi ripresi, peso stabile, fluttuazioni stagionali..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANNER SEZIONI FUNZIONALI -->
+  <div class="functional-banner" id="functional-banner">
+    <div class="functional-banner-icon">📋</div>
+    <div>
+      <h4>Sezione aggiuntiva disponibile</h4>
+      <p>In base alle condizioni indicate, sono necessarie informazioni specifiche aggiuntive. Compila la sezione qui sotto.</p>
+    </div>
+  </div>
+
+  <!-- FUNZIONALE GI -->
+  <div class="functional-section" id="func-gi">
+    <div class="card">
+      <div class="functional-tag">📋 Sezione Funzionale — Disturbi Gastrointestinali</div>
+      <div class="card-title">Disturbi Gastrointestinali</div>
+      <div class="field" style="margin-bottom:16px;">
+        <label>Sintomi più frequenti</label>
+        <div class="check-group" id="gi-sintomi">
+          <label class="check-item"><input type="checkbox" name="gi_sintomi" value="Gonfiore addominale"><div class="check-box"></div><span class="check-label">Gonfiore addominale</span></label>
+          <label class="check-item"><input type="checkbox" name="gi_sintomi" value="Dolori o crampi addominali"><div class="check-box"></div><span class="check-label">Dolori o crampi addominali</span></label>
+          <label class="check-item"><input type="checkbox" name="gi_sintomi" value="Stitichezza cronica"><div class="check-box"></div><span class="check-label">Stitichezza cronica</span></label>
+          <label class="check-item"><input type="checkbox" name="gi_sintomi" value="Diarrea frequente"><div class="check-box"></div><span class="check-label">Diarrea frequente</span></label>
+          <label class="check-item"><input type="checkbox" name="gi_sintomi" value="Reflusso/bruciori di stomaco"><div class="check-box"></div><span class="check-label">Reflusso / bruciori di stomaco</span></label>
+          <label class="check-item"><input type="checkbox" name="gi_sintomi" value="Nausea frequente"><div class="check-box"></div><span class="check-label">Nausea frequente</span></label>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Diagnosi formale</label>
+          <input type="text" id="gi-diagnosi" name="gi_diagnosi" placeholder="es. IBS, SIBO, gastrite cronica...">
+        </div>
+        <div class="field">
+          <label>Alimenti che aggravano i sintomi</label>
+          <input type="text" id="gi-trigger" name="gi_trigger_alimentari" placeholder="es. Latticini, grano, cipolle...">
+        </div>
+        <div class="field col-full">
+          <label>Dieta terapeutica seguita</label>
+          <textarea id="gi-dieta" name="gi_dieta_terapeutica" placeholder="es. Dieta FODMAP, gluten free prescritto..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUNZIONALE ORMONALE -->
+  <div class="functional-section" id="func-ormonale">
+    <div class="card">
+      <div class="functional-tag">📋 Sezione Funzionale — Disturbi Ormonali</div>
+      <div class="card-title">Tiroide e Ormoni</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Diagnosi specifica</label>
+          <select id="ormoni-diagnosi" name="ormoni_diagnosi">
+            <option value="">— seleziona —</option>
+            <option value="Ipotiroidismo">Ipotiroidismo</option>
+            <option value="Ipertiroidismo">Ipertiroidismo</option>
+            <option value="Hashimoto">Tiroidite di Hashimoto</option>
+            <option value="PCOS">PCOS (ovaio policistico)</option>
+            <option value="Amenorrea">Amenorrea</option>
+            <option value="Menopausa">Menopausa / perimenopausa</option>
+            <option value="Altra">Altra condizione ormonale</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Terapia ormonale in corso</label>
+          <select id="ormoni-terapia" name="ormoni_terapia">
+            <option value="">— seleziona —</option>
+            <option value="No">No</option>
+            <option value="Levotiroxina">Sì, levotiroxina</option>
+            <option value="Contraccettivi ormonali">Sì, contraccettivi ormonali</option>
+            <option value="Altra terapia">Sì, altra terapia</option>
+          </select>
+        </div>
+        <div class="field col-full">
+          <label>Come influenza il tuo peso / energia</label>
+          <textarea id="ormoni-note" name="ormoni_note" placeholder="es. Metabolismo lento, difficoltà a dimagrire, ciclo irregolare..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUNZIONALE METABOLICO -->
+  <div class="functional-section" id="func-metabolico">
+    <div class="card">
+      <div class="functional-tag">📋 Sezione Funzionale — Metabolismo</div>
+      <div class="card-title">Glicemia e Metabolismo</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Diagnosi</label>
+          <select id="met-diagnosi" name="met_diagnosi">
+            <option value="">— seleziona —</option>
+            <option value="Diabete tipo 1">Diabete tipo 1</option>
+            <option value="Diabete tipo 2">Diabete tipo 2</option>
+            <option value="Prediabete">Prediabete</option>
+            <option value="Insulino-resistenza">Insulino-resistenza</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Monitori la glicemia?</label>
+          <select id="met-monitoraggio" name="met_monitoraggio">
+            <option value="">— seleziona —</option>
+            <option value="No">No</option>
+            <option value="Glucometro">Sì, con glucometro</option>
+            <option value="CGM">Sì, con sensore continuo (CGM)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Farmaci per glicemia / diabete</label>
+          <input type="text" id="met-farmaci" name="met_farmaci" placeholder="es. Metformina, insulina...">
+        </div>
+        <div class="field">
+          <label>Ultimo valore HbA1c</label>
+          <input type="text" id="met-hba1c" name="met_hba1c" placeholder="es. 6.2%">
+        </div>
+        <div class="field col-full">
+          <label>Note sul metabolismo</label>
+          <textarea id="met-note" name="met_note" placeholder="Fluttuazioni glicemiche, ipoglicemie, orari insulina..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUNZIONALE CELIACHIA/NICHEL -->
+  <div class="functional-section" id="func-celiachia">
+    <div class="card">
+      <div class="functional-tag">📋 Sezione Funzionale — Intolleranze Gravi</div>
+      <div class="card-title">Celiachia e Allergia al Nichel</div>
+      <div class="field" style="margin-bottom:16px;">
+        <label>Condizione diagnosticata</label>
+        <div class="check-group inline" id="cel-tipo">
+          <label class="check-item"><input type="checkbox" name="cel_tipo" value="Celiachia diagnosticata"><div class="check-box"></div><span class="check-label">Celiachia diagnosticata</span></label>
+          <label class="check-item"><input type="checkbox" name="cel_tipo" value="Sensibilità al glutine non celiaca"><div class="check-box"></div><span class="check-label">Sensibilità al glutine non celiaca</span></label>
+          <label class="check-item"><input type="checkbox" name="cel_tipo" value="Allergia al nichel (SNAS)"><div class="check-box"></div><span class="check-label">Allergia al nichel (SNAS)</span></label>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Data diagnosi / da quanto tempo</label>
+          <input type="text" id="cel-data" name="cel_data" placeholder="es. Dal 2018, 3 anni fa...">
+        </div>
+        <div class="field">
+          <label>Segui già una dieta di esclusione rigorosa?</label>
+          <select id="cel-dieta" name="cel_dieta">
+            <option value="">— seleziona —</option>
+            <option value="Sì, rigorosamente">Sì, rigorosamente</option>
+            <option value="Sì, con difficoltà">Sì, ma con difficoltà</option>
+            <option value="Parzialmente">Parzialmente</option>
+            <option value="No">No, ho appena ricevuto la diagnosi</option>
+          </select>
+        </div>
+        <div class="field col-full">
+          <label>Difficoltà o situazioni particolari</label>
+          <textarea id="cel-note" name="cel_note" placeholder="es. Difficoltà fuori casa, contaminazioni, alimenti nascosti..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn-back" onclick="prevSection(4)">← Indietro</button>
+    <button class="btn-next" onclick="nextSection(4)">Continua →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SEZIONE 5 — OBIETTIVI
+══════════════════════════════════════════════════ -->
+<div class="form-section" id="sec-5">
+  <div class="section-header">
+    <div class="section-number">Sezione 05 / 06</div>
+    <div class="section-title">Obiettivi</div>
+    <div class="section-desc">Cosa vuoi ottenere e quanto sei disposto a impegnarti.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Obiettivo Principale</div>
+    <div class="field" style="margin-bottom:24px;">
+      <label>Qual è il tuo obiettivo principale? <span class="req">*</span></label>
+      <div class="check-group" id="obiettivo-check">
+        <label class="check-item"><input type="radio" name="obiettivo_principale" value="Dimagrimento e riduzione del peso"><div class="radio-box"></div><span class="check-label">Dimagrimento e riduzione del peso</span></label>
+        <label class="check-item"><input type="radio" name="obiettivo_principale" value="Aumento della massa muscolare"><div class="radio-box"></div><span class="check-label">Aumento della massa muscolare</span></label>
+        <label class="check-item"><input type="radio" name="obiettivo_principale" value="Ricomposizione corporea"><div class="radio-box"></div><span class="check-label">Ricomposizione corporea (meno grasso, più muscolo)</span></label>
+        <label class="check-item"><input type="radio" name="obiettivo_principale" value="Benessere generale"><div class="radio-box"></div><span class="check-label">Benessere generale e alimentazione sana</span></label>
+        <label class="check-item"><input type="radio" name="obiettivo_principale" value="Performance sportiva"><div class="radio-box"></div><span class="check-label">Performance sportiva</span></label>
+        <label class="check-item"><input type="radio" name="obiettivo_principale" value="Gestione patologia"><div class="radio-box"></div><span class="check-label">Gestione di una patologia o condizione medica</span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Obiettivo secondario <span style="font-weight:400;color:var(--text-light)">(opzionale)</span></label>
+      <div class="check-group" id="obiettivo-secondario-check">
+        <label class="check-item"><input type="checkbox" name="obiettivo_secondario" value="Più energia quotidiana"><div class="check-box"></div><span class="check-label">Più energia durante la giornata</span></label>
+        <label class="check-item"><input type="checkbox" name="obiettivo_secondario" value="Migliorare il sonno"><div class="check-box"></div><span class="check-label">Migliorare la qualità del sonno</span></label>
+        <label class="check-item"><input type="checkbox" name="obiettivo_secondario" value="Ridurre gonfiore digestivo"><div class="check-box"></div><span class="check-label">Ridurre gonfiore e sintomi digestivi</span></label>
+        <label class="check-item"><input type="checkbox" name="obiettivo_secondario" value="Migliorare pelle e capelli"><div class="check-box"></div><span class="check-label">Migliorare pelle e capelli</span></label>
+        <label class="check-item"><input type="checkbox" name="obiettivo_secondario" value="Gestire colesterolo/glicemia"><div class="check-box"></div><span class="check-label">Gestire colesterolo / glicemia</span></label>
+        <label class="check-item"><input type="checkbox" name="obiettivo_secondario" value="Fertilità"><div class="check-box"></div><span class="check-label">Migliorare la fertilità</span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Motivazione e Aspettative</div>
+    <div class="field" style="margin-bottom:20px;">
+      <label>Quanto sei motivato/a? (1–10)</label>
+      <div class="scale-wrap">
+        <div class="scale-track" id="motivazione-scale">
+          <button type="button" class="scale-btn" data-val="1" onclick="setScale('motivazione',1)">1</button>
+          <button type="button" class="scale-btn" data-val="2" onclick="setScale('motivazione',2)">2</button>
+          <button type="button" class="scale-btn" data-val="3" onclick="setScale('motivazione',3)">3</button>
+          <button type="button" class="scale-btn" data-val="4" onclick="setScale('motivazione',4)">4</button>
+          <button type="button" class="scale-btn" data-val="5" onclick="setScale('motivazione',5)">5</button>
+          <button type="button" class="scale-btn" data-val="6" onclick="setScale('motivazione',6)">6</button>
+          <button type="button" class="scale-btn" data-val="7" onclick="setScale('motivazione',7)">7</button>
+          <button type="button" class="scale-btn" data-val="8" onclick="setScale('motivazione',8)">8</button>
+          <button type="button" class="scale-btn" data-val="9" onclick="setScale('motivazione',9)">9</button>
+          <button type="button" class="scale-btn" data-val="10" onclick="setScale('motivazione',10)">10</button>
+        </div>
+        <div class="scale-labels"><span>Per niente</span><span>Moltissimo</span></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Qual è il problema principale che percepisci?</label>
+        <textarea id="f-problema-principale" name="problema_principale_percepito" placeholder="es. Non riesco a perdere peso nonostante mi impegni, sono sempre stanca..."></textarea>
+      </div>
+      <div class="field">
+        <label>Quanto tempo puoi dedicare al percorso?</label>
+        <select id="f-tempo-disponibile" name="tempo_disponibile">
+          <option value="">— seleziona —</option>
+          <option value="Molto poco">Molto poco — ho una vita frenetica</option>
+          <option value="Poco">Poco — qualche ora a settimana</option>
+          <option value="Abbastanza">Abbastanza — mi posso organizzare</option>
+          <option value="Molto">Molto — il percorso è una priorità</option>
+        </select>
+      </div>
+      <div class="field col-full">
+        <label>Quanto sei disposto/a a cambiare le tue abitudini?</label>
+        <div class="check-group inline" id="disponibilita-check">
+          <label class="check-item"><input type="radio" name="disponibilita_cambiamento" value="Cambiamenti minimi"><div class="radio-box"></div><span class="check-label">Cambiamenti minimi</span></label>
+          <label class="check-item"><input type="radio" name="disponibilita_cambiamento" value="Cambiamenti graduali"><div class="radio-box"></div><span class="check-label">Cambiamenti graduali</span></label>
+          <label class="check-item"><input type="radio" name="disponibilita_cambiamento" value="Cambiamenti significativi"><div class="radio-box"></div><span class="check-label">Cambiamenti significativi</span></label>
+          <label class="check-item"><input type="radio" name="disponibilita_cambiamento" value="Stravolgere le abitudini"><div class="radio-box"></div><span class="check-label">Stravolgere le abitudini se necessario</span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn-back" onclick="prevSection(5)">← Indietro</button>
+    <button class="btn-next" onclick="nextSection(5)">Continua →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SEZIONE 6 — CONCLUSIONE
+══════════════════════════════════════════════════ -->
+<div class="form-section" id="sec-6">
+  <div class="section-header">
+    <div class="section-number">Sezione 06 / 06</div>
+    <div class="section-title">Conclusione</div>
+    <div class="section-desc">Note finali, analisi del sangue e consenso.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Note Aggiuntive</div>
+    <div class="field">
+      <label>C'è altro che vuoi comunicare prima della prima visita?</label>
+      <textarea id="f-note" name="note" placeholder="Informazioni aggiuntive, domande, situazioni particolari..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Analisi del Sangue</div>
+    <div style="background:#fdf8ee;border-left:3px solid #c9a84c;border-radius:0 10px 10px 0;padding:16px 20px;">
+      <div style="font-size:14px;font-weight:700;color:#1a3a2a;margin-bottom:8px;">📎 Porta le tue analisi alla visita</div>
+      <p style="font-size:13px;color:#4a5e54;line-height:1.7;margin-bottom:10px;">
+        Se hai esami del sangue recenti (ultimi 6 mesi), portali con te alla prima visita oppure inviali in anticipo via email a:
+      </p>
+      <a href="mailto:nutrizione@neacea.com" style="display:inline-block;background:#1a3a2a;color:white;font-size:13px;font-weight:700;padding:10px 20px;border-radius:8px;text-decoration:none;">
+        📧 nutrizione@neacea.com
+      </a>
+      <p style="font-size:12px;color:#8fa89a;margin-top:10px;line-height:1.6;">
+        Indicando nome e cognome nell'oggetto dell'email. Le analisi permettono di personalizzare al meglio il tuo piano nutrizionale.
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Privacy e Consenso</div>
+    <label class="check-item" id="privacy-check-item">
+      <input type="checkbox" id="f-privacy" name="privacy" value="Sì">
+      <div class="check-box"></div>
+      <span class="check-label">
+        Ho letto e accetto il trattamento dei miei dati personali ai sensi del GDPR (Reg. UE 2016/679) per la gestione del percorso nutrizionale. I dati saranno trattati con riservatezza e non ceduti a terzi.
+        <small>* Campo obbligatorio</small>
+      </span>
+    </label>
+    <div class="err-msg" id="privacy-err">Devi accettare il trattamento dei dati per procedere.</div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn-back" onclick="prevSection(6)">← Indietro</button>
+    <button class="btn-submit" onclick="submitForm()">✓ Invia la scheda</button>
+  </div>
+</div>
+
+</div><!-- fine form-main -->
+
+<!-- SUCCESSO -->
+<div id="success-screen">
+  <div class="success-icon">✓</div>
+  <div class="success-title">Scheda inviata!</div>
+  <div class="success-desc">
+    Grazie per aver compilato la scheda.<br>
+    Verrà esaminata prima della tua prima visita.<br><br>
+    <strong>Ci vediamo presto! 🌿</strong>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmW3o62dZw46JbNklTAlVv3xjt9qb0_8LVDwU38jk5pH1QTWz3f1KzG-JGpLJdYHxW/exec';
+
+// ── STATO ─────────────────────────────────────────────────────
+const scaleValues = { stress: null, motivazione: null };
+let analisiFile = null;
+let functionalTriggers = new Set();
+
+// ── NAVIGAZIONE ───────────────────────────────────────────────
+function nextSection(current) {
+  if (!validateSection(current)) return;
+  showSection(current + 1);
+}
+function prevSection(current) {
+  showSection(current - 1);
+}
+function showSection(num) {
+  document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('sec-' + num);
+  if (target) target.classList.add('active');
+  document.getElementById('progress-bar').style.width = (num / 6 * 100) + '%';
+  for (let i = 1; i <= 6; i++) {
+    const el = document.getElementById('step-ind-' + i);
+    if (el) el.classList.toggle('done', i <= num);
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── VALIDAZIONE ───────────────────────────────────────────────
+function validateSection(num) {
+  let ok = true;
+  if (num === 1) {
+    ['f-nome', 'f-cognome', 'f-dob', 'f-email', 'f-altezza'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el || !el.value.trim()) {
+        if (el) el.classList.add('error');
+        ok = false;
+      } else {
+        el.classList.remove('error');
+      }
+    });
+    if (!ok) alert('Compila i campi obbligatori prima di continuare.');
+  }
+  if (num === 5) {
+    const obiettivo = getRadioValue('obiettivo_principale');
+    if (!obiettivo) {
+      alert('Seleziona il tuo obiettivo principale.');
+      ok = false;
+    }
+  }
+  if (num === 6) {
+    if (!document.getElementById('f-privacy').checked) {
+      document.getElementById('privacy-err').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('privacy-err').classList.remove('show');
+    }
+  }
+  return ok;
+}
+
+// ── CHECKBOX / RADIO ──────────────────────────────────────────
+document.addEventListener('click', function(e) {
+  const item = e.target.closest('.check-item');
+  if (!item) return;
+  const inp = item.querySelector('input');
+  if (!inp) return;
+
+  if (inp.type === 'radio') {
+    const group = item.closest('.check-group') || item.parentElement;
+    group.querySelectorAll('.check-item').forEach(ci => ci.classList.remove('selected'));
+    item.classList.add('selected');
+    inp.checked = true;
+  } else if (inp.type === 'checkbox') {
+    inp.checked = !inp.checked;
+    item.classList.toggle('selected', inp.checked);
+    // Logica "Nessuna" — deseleziona gli altri
+    if (inp.checked && inp.value === 'Nessuna') {
+      const group = item.closest('.check-group');
+      group.querySelectorAll('.check-item').forEach(ci => {
+        const i2 = ci.querySelector('input');
+        if (i2 && i2 !== inp) { i2.checked = false; ci.classList.remove('selected'); }
+      });
+    } else if (inp.checked) {
+      const group = item.closest('.check-group');
+      group.querySelectorAll('.check-item').forEach(ci => {
+        const i2 = ci.querySelector('input');
+        if (i2 && i2.value === 'Nessuna' && i2 !== inp) {
+          i2.checked = false; ci.classList.remove('selected');
+        }
+      });
+    }
+    checkFunctionalTriggers();
+  }
+});
+
+// ── TRIGGER FUNZIONALI ────────────────────────────────────────
+function checkFunctionalTriggers() {
+  functionalTriggers = new Set();
+  // Celiachia
+  const celRadio = document.querySelector('input[name="celiachia"]:checked');
+  if (celRadio && celRadio.value === 'Sì, diagnosticata') functionalTriggers.add('celiachia');
+  // Allergie
+  document.querySelectorAll('#allergie-check .check-item.selected').forEach(item => {
+    const t = item.getAttribute('data-triggers-functional');
+    if (t) functionalTriggers.add(t);
+  });
+  // Patologie
+  document.querySelectorAll('#patologie-check .check-item.selected').forEach(item => {
+    const t = item.getAttribute('data-triggers-functional');
+    if (t) functionalTriggers.add(t);
+  });
+
+  document.getElementById('functional-banner').classList.toggle('show', functionalTriggers.size > 0);
+  ['gi', 'ormonale', 'metabolico', 'celiachia'].forEach(type => {
+    const show = (
+      (type === 'gi'         && functionalTriggers.has('gi'))         ||
+      (type === 'ormonale'   && functionalTriggers.has('ormonale'))   ||
+      (type === 'metabolico' && functionalTriggers.has('metabolico')) ||
+      (type === 'celiachia'  && (functionalTriggers.has('celiachia') || functionalTriggers.has('nichel')))
+    );
+    document.getElementById('func-' + type).classList.toggle('show', show);
+  });
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function getCheckedValues(groupId) {
+  return [...document.querySelectorAll('#' + groupId + ' .check-item.selected')]
+    .map(item => item.querySelector('input')?.value).filter(Boolean);
+}
+function getRadioValue(name) {
+  const el = document.querySelector('input[name="' + name + '"]:checked');
+  return el ? el.value : '';
+}
+
+// ── SCALE ─────────────────────────────────────────────────────
+function setScale(name, val) {
+  scaleValues[name] = val;
+  const track = document.getElementById(name + '-scale');
+  if (!track) return;
+  track.querySelectorAll('.scale-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.val) <= val);
+  });
+}
+
+// ── UPLOAD ────────────────────────────────────────────────────
+function handleUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  analisiFile = file;
+  document.getElementById('upload-zone').classList.add('has-file');
+  const nameEl = document.getElementById('upload-filename');
+  nameEl.style.display = 'block';
+  nameEl.textContent = '✓ ' + file.name;
+}
+
+// ── INVIO FORM ────────────────────────────────────────────────
+async function submitForm() {
+  if (!validateSection(6)) return;
+
+  const btn = document.querySelector('.btn-submit');
+  btn.textContent = 'Invio in corso...';
+  btn.disabled = true;
+
+  let analisiB64 = '';
+  if (analisiFile) {
+    analisiB64 = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result.split(',')[1]);
+      reader.readAsDataURL(analisiFile);
+    });
+  }
+
+  const payload = {
+    action:    'addAnamnesNutrizionale',
+    timestamp: new Date().toISOString(),
+
+    // A. DATI PERSONALI
+    nome:            document.getElementById('f-nome').value.trim(),
+    cognome:         document.getElementById('f-cognome').value.trim(),
+    data_nascita:    document.getElementById('f-dob').value,
+    sesso:           document.getElementById('f-sesso').value,
+    email:           document.getElementById('f-email').value.trim(),
+    telefono:        document.getElementById('f-telefono').value.trim(),
+    codice_fiscale:  (document.getElementById('f-cf')?.value || '').toUpperCase().trim(),
+    professione:     document.getElementById('f-lavoro').value.trim(),
+    altezza:         document.getElementById('f-altezza').value,
+    peso_attuale:    document.getElementById('f-peso').value,
+    peso_obiettivo:  document.getElementById('f-peso-target').value,
+
+    // B. STILE DI VITA
+    sport:               getRadioValue('sport'),
+    sport_tipo:          document.getElementById('f-sport').value.trim(),
+    ore_sport_settimana: document.getElementById('f-ore-sport').value,
+    tipo_lavoro:         document.getElementById('f-tipo-lavoro').value,
+    ore_sonno:           document.getElementById('f-sonno').value,
+    qualita_sonno:       getRadioValue('qualita_sonno'),
+    risvegli_notturni:   getRadioValue('risvegli_notturni'),
+    passi_giornalieri:   document.getElementById('f-passi-giornalieri').value,
+    livello_sedentario:  getRadioValue('livello_sedentario'),
+    stress:              scaleValues.stress || '',
+
+    // C. ROUTINE REALE
+    chi_cucina:      document.getElementById('f-chi-cucina').value.trim(),
+    pasti_fuori:     document.getElementById('f-pasti-fuori').value,
+    orari_pasti:     document.getElementById('f-orari-pasti').value.trim(),
+    lavoro_turni:    getRadioValue('lavoro_turni'),
+    weekend_diverso: getRadioValue('weekend_diverso'),
+
+    // D. STRUTTURA ALIMENTARE
+    pasti_giorno:      document.getElementById('f-pasti').value,
+    acqua_giornaliera: document.getElementById('f-acqua').value,
+    colazione:         getRadioValue('colazione'),
+    regime_alimentare: getCheckedValues('regime-check').join(', '),
+    alimenti_avversioni: document.getElementById('f-avversioni').value.trim(),
+    alimenti_preferiti:  document.getElementById('f-preferiti').value.trim(),
+    consumo_alcol:       document.getElementById('f-alcol').value,
+
+    // E. ALLERGIE / INTOLLERANZE
+    celiachia:              getRadioValue('celiachia'),
+    allergia_alimentare:    getCheckedValues('allergie-check').join(', '),
+    allergia_alimentare_altro: document.getElementById('f-allergia-altro').value.trim(),
+    intolleranza:           getCheckedValues('intolleranze-check').join(', '),
+    intolleranza_altro:     document.getElementById('f-allergie-altro').value.trim(),
+
+    // F. STORIA NUTRIZIONALE
+    diete_precedenti:       document.getElementById('f-diete-precedenti').value.trim(),
+    cosa_ha_funzionato:     document.getElementById('f-cosa-funzionato').value.trim(),
+    cosa_non_ha_funzionato: document.getElementById('f-cosa-non-funzionato').value.trim(),
+    motivo_abbandono:       document.getElementById('f-motivo-abbandono').value.trim(),
+    aderenza_passata:       document.getElementById('f-aderenza-passata').value,
+
+    // G. FAME E COMPORTAMENTO
+    fame_mattino:       getRadioValue('fame_mattino'),
+    fame_sera:          getRadioValue('fame_sera'),
+    attacchi_fame:      getRadioValue('attacchi_fame'),
+    fame_nervosa:       getRadioValue('fame_nervosa'),
+    perdita_controllo:  getRadioValue('perdita_controllo'),
+    rapporto_dolci:     getRadioValue('rapporto_dolci'),
+    situazioni_trigger: document.getElementById('f-situazioni-trigger').value.trim(),
+
+    // H. DIGESTIONE E ALVO
+    gonfiore:                  getRadioValue('gonfiore'),
+    pesantezza_post_prandiale: getRadioValue('pesantezza_post_prandiale'),
+    reflusso:                  getRadioValue('reflusso'),
+    alvo_regolare:             getRadioValue('alvo_regolare'),
+    frequenza_evacuazioni:     document.getElementById('f-freq-evacuazioni').value.trim(),
+    consistenza_feci:          document.getElementById('f-bristol').value,
+
+    // I. SALUTE CLINICA
+    patologie_diagnosticate:      getCheckedValues('patologie-check').join(', '),
+    patologie_diagnosticate_altro: document.getElementById('f-patologie-diagnosticate-altro').value.trim(),
+    sintomi_riferiti:             getCheckedValues('sintomi-check').join(', '),
+    sintomi_riferiti_altro:       document.getElementById('f-sintomi-riferiti-altro').value.trim(),
+    condizioni_sospette:          document.getElementById('f-condizioni-sospette').value.trim(),
+    farmaci_attuali:              document.getElementById('f-farmaci-attuali').value.trim(),
+    integratori_attuali:          document.getElementById('f-integratori-attuali').value.trim(),
+
+    // L. STORIA DEL PESO
+    peso_massimo:       document.getElementById('f-peso-massimo').value,
+    peso_minimo:        document.getElementById('f-peso-minimo').value,
+
+    variazioni_recenti: document.getElementById('f-variazioni-recenti').value.trim(),
+
+    // M. OBIETTIVI
+    obiettivo_principale:      getRadioValue('obiettivo_principale'),
+    obiettivo_secondario:      getCheckedValues('obiettivo-secondario-check').join(', '),
+    motivazione:               scaleValues.motivazione || '',
+    problema_principale_percepito: document.getElementById('f-problema-principale').value.trim(),
+    tempo_disponibile:         document.getElementById('f-tempo-disponibile').value,
+    disponibilita_cambiamento: getRadioValue('disponibilita_cambiamento'),
+
+    // N. SEZIONI FUNZIONALI GI
+    gi_sintomi:          functionalTriggers.has('gi') ? getCheckedValues('gi-sintomi').join(', ') : '',
+    gi_diagnosi:         document.getElementById('gi-diagnosi').value.trim(),
+    gi_trigger_alimentari: document.getElementById('gi-trigger').value.trim(),
+    gi_dieta_terapeutica: document.getElementById('gi-dieta').value.trim(),
+
+    // N. SEZIONI FUNZIONALI ORMONALI
+    ormoni_diagnosi: document.getElementById('ormoni-diagnosi').value,
+    ormoni_terapia:  document.getElementById('ormoni-terapia').value,
+    ormoni_note:     document.getElementById('ormoni-note').value.trim(),
+
+    // N. SEZIONI FUNZIONALI METABOLICHE
+    met_diagnosi:      document.getElementById('met-diagnosi').value,
+    met_monitoraggio:  document.getElementById('met-monitoraggio').value,
+    met_farmaci:       document.getElementById('met-farmaci').value.trim(),
+    met_hba1c:         document.getElementById('met-hba1c').value.trim(),
+    met_note:          document.getElementById('met-note').value.trim(),
+
+    // N. SEZIONI FUNZIONALI CELIACHIA/NICHEL
+    cel_tipo:  functionalTriggers.has('celiachia') || functionalTriggers.has('nichel') ? getCheckedValues('cel-tipo').join(', ') : '',
+    cel_data:  document.getElementById('cel-data').value.trim(),
+    cel_dieta: document.getElementById('cel-dieta').value,
+    cel_note:  document.getElementById('cel-note').value.trim(),
+
+    // O. DOCUMENTI
+    analisi_file: analisiB64 ? '[allegato]' : '',
+
+    // P. PRIVACY
+    privacy: document.getElementById('f-privacy').checked ? 'Sì ✓' : 'No',
+
+    // CONCLUSIONE
+    note: document.getElementById('f-note').value.trim(),
+  };
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    document.getElementById('form-main').style.display = 'none';
+    document.querySelector('.hero').style.display = 'none';
+    document.getElementById('success-screen').classList.add('show');
+  } catch(err) {
+    btn.textContent = '✓ Invia la scheda';
+    btn.disabled = false;
+    alert('Errore di connessione. Controlla la connessione e riprova.');
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  // Imposta data default ai campi data
+  const oggi = new Date().toISOString().split('T')[0];
+  // Non pre-compila la data di nascita — deve inserirla l'utente
+  
+  // Click su upload zone
+  document.getElementById('upload-zone').addEventListener('click', () => {
+    document.getElementById('analisi-file').click();
+  });
+});
+</script>
+</body>
+</html>

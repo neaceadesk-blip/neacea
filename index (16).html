@@ -1,0 +1,2713 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scheda Nutrizionale — Neacea Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:       #1a3d2b;
+  --green-mid:   #2a5c40;
+  --green-light: #3d7a56;
+  --green-pale:  #e8f2ec;
+  --green-xpale: #f0f7f2;
+  --bg:          #f0f5f4;
+  --bg2:         #ffffff;
+  --border:      #dce8e1;
+  --border2:     #c4d9cd;
+  --text:        #1a3d2b;
+  --text2:       #5a7a68;
+  --text3:       #98b4a5;
+  --accent:      #1a3d2b;
+  --radius:      14px;
+  --radius-sm:   9px;
+  --shadow:      0 1px 4px rgba(26,61,43,.07);
+  --shadow-md:   0 4px 16px rgba(26,61,43,.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body { background: var(--bg); color: var(--text); font-family: 'Nunito', system-ui, sans-serif; min-height: 100vh; }
+
+/* ── TOPBAR ── */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 60px;
+  background: var(--green); z-index: 100;
+  display: flex; align-items: center; padding: 0 28px; gap: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.18);
+}
+.topbar-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.topbar-logo img { height: 32px; filter: brightness(0) invert(1); }
+.topbar-logo-text { font-size: 17px; font-weight: 700; color: #fff; letter-spacing: -.01em; }
+.topbar-divider { width: 1px; height: 22px; background: rgba(255,255,255,.2); }
+.topbar-client { flex: 1; }
+.topbar-client .client-name { font-size: 15px; font-weight: 700; color: #fff; }
+.topbar-client .client-sub  { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 1px; }
+.topbar-badges { display: flex; gap: 8px; }
+.badge {
+  padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  background: rgba(255,255,255,.12); color: rgba(255,255,255,.85);
+  border: 1px solid rgba(255,255,255,.15);
+}
+.badge.highlight { background: rgba(255,255,255,.22); color: #fff; }
+.topbar-btn {
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+  border-radius: var(--radius-sm); padding: 6px 14px; color: rgba(255,255,255,.85);
+  font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: all .15s;
+}
+.topbar-btn:hover { background: rgba(255,255,255,.22); color: #fff; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position: fixed; top: 60px; left: 0; bottom: 0; width: 230px;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  padding: 20px 12px; display: flex; flex-direction: column; gap: 2px;
+  overflow-y: auto; z-index: 90;
+}
+.nav-group { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; padding: 14px 12px 6px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  border-radius: var(--radius-sm); cursor: pointer; color: var(--text2);
+  font-size: 13px; font-weight: 600; transition: all .15s;
+  border: none; background: transparent; text-align: left; width: 100%;
+  font-family: 'Nunito', sans-serif;
+}
+.nav-item:hover { background: var(--green-xpale); color: var(--green); }
+.nav-item.active { background: var(--green-pale); color: var(--green); }
+.nav-item.active .nav-icon { opacity: 1; }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+/* ── MAIN ── */
+.main { margin-left: 230px; margin-top: 60px; padding: 32px; }
+.section { display: none; }
+.section.active { display: block; }
+.section-title { font-size: 22px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+.section-sub   { font-size: 13px; color: var(--text2); margin-bottom: 28px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px;
+}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+
+/* ── STAT CARDS ── */
+.stat-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 20px; box-shadow: var(--shadow);
+}
+.stat-label { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+.stat-value { font-size: 26px; font-weight: 700; color: var(--green); line-height: 1; }
+.stat-value span { font-size: 13px; font-weight: 600; color: var(--text2); margin-left: 3px; }
+.stat-delta { font-size: 12px; margin-top: 6px; font-weight: 600; }
+.stat-delta.pos { color: #2a7a4e; }
+.stat-delta.neg { color: #c0392b; }
+.stat-delta.neu { color: var(--text3); }
+
+/* ── FORMS ── */
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; }
+.field input, .field select, .field textarea {
+  background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  padding: 10px 14px; color: var(--text); font-size: 14px; font-family: 'Nunito', sans-serif;
+  font-weight: 500; outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--green-mid); box-shadow: 0 0 0 3px rgba(26,61,43,.08);
+}
+.field select option { background: #fff; }
+.field textarea { resize: vertical; min-height: 80px; }
+
+/* ── BUTTONS ── */
+.btn-primary {
+  background: var(--green); color: #fff; border: none; border-radius: var(--radius-sm);
+  padding: 11px 22px; font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Nunito', sans-serif; transition: background .15s; letter-spacing: .02em;
+}
+.btn-primary:hover { background: var(--green-mid); }
+.btn-ghost {
+  background: transparent; border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  padding: 9px 16px; color: var(--text2); font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: 'Nunito', sans-serif; transition: all .15s;
+}
+.btn-ghost:hover { border-color: var(--green); color: var(--green); background: var(--green-xpale); }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  background: var(--bg); border: 1px solid var(--border); padding: 4px;
+  border-radius: var(--radius-sm); width: fit-content;
+}
+.tab {
+  padding: 7px 18px; border-radius: 6px; font-size: 13px; font-weight: 700;
+  cursor: pointer; color: var(--text2); transition: all .15s;
+  border: none; background: transparent; font-family: 'Nunito', sans-serif;
+}
+.tab.active { background: var(--green); color: #fff; }
+.tab:hover:not(.active) { color: var(--green); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── CHARTS ── */
+.chart-wrap { position: relative; height: 200px; margin-top: 10px; }
+.chart-label { font-size: 14px; font-weight: 700; color: var(--green); }
+.chart-sub   { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ── VISBODY DROP ── */
+.drop-zone {
+  border: 2px dashed var(--border2); border-radius: var(--radius);
+  padding: 32px; text-align: center; cursor: pointer; transition: all .2s;
+  background: var(--green-xpale);
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--green-mid); background: var(--green-pale);
+}
+.drop-icon { font-size: 32px; margin-bottom: 10px; }
+.drop-text { font-size: 14px; font-weight: 700; color: var(--green); }
+.drop-sub  { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+/* ── SCAN ITEMS ── */
+.scan-item {
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
+}
+.scan-date { font-size: 14px; font-weight: 700; color: var(--green); }
+.scan-meta  { font-size: 12px; color: var(--text2); margin-top: 3px; }
+.btn-del { background: transparent; border: none; color: var(--text3); cursor: pointer; font-size: 16px; padding: 4px 8px; border-radius: 6px; transition: all .15s; }
+.btn-del:hover { color: #c0392b; background: #fdecea; }
+
+/* ── FOTO ── */
+.foto-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap: 12px; margin-top: 16px; }
+.foto-thumb {
+  aspect-ratio: 3/4; border-radius: var(--radius-sm); overflow: hidden;
+  cursor: pointer; position: relative; background: var(--bg);
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.foto-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .2s; }
+.foto-thumb:hover img { transform: scale(1.04); }
+.foto-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(26,61,43,.85));
+  padding: 20px 8px 8px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.9);
+}
+.foto-del {
+  position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,.5);
+  border: none; border-radius: 50%; width: 24px; height: 24px;
+  color: white; cursor: pointer; font-size: 12px; display: none;
+  align-items: center; justify-content: center;
+}
+.foto-thumb:hover .foto-del { display: flex; }
+
+/* ── CONFRONTO ── */
+.confronto-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.confronto-box { background: var(--green-xpale); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+.confronto-box-label { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+.cf-img-wrap { position: relative; border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 3/4; background: var(--bg); }
+.cf-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.cf-label {
+  position: absolute; bottom: 0; left: 0; right: 0; text-align: center;
+  padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  background: linear-gradient(transparent, rgba(0,0,0,.75));
+}
+.cf-label.prima { color: #f0a050; }
+.cf-label.dopo  { color: #6dd68e; }
+.slider-wrap { position: relative; aspect-ratio: 3/4; border-radius: var(--radius-sm); overflow: hidden; cursor: col-resize; user-select: none; max-width: 380px; margin: 0 auto; }
+.slider-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.slider-wrap .img-dopo  { z-index: 1; }
+.slider-wrap .img-prima { z-index: 2; clip-path: inset(0 50% 0 0); }
+.slider-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #fff; z-index: 3; left: 50%; transform: translateX(-50%); pointer-events: none; }
+.slider-handle { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 4; width: 40px; height: 40px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,.35); pointer-events: none; font-size: 11px; color: var(--green); font-weight: 700; }
+.slider-tag { position: absolute; top: 10px; z-index: 5; background: rgba(0,0,0,.55); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.slider-tag.prima { left: 10px; color: #f0a050; }
+.slider-tag.dopo  { right: 10px; color: #6dd68e; }
+
+/* ── PLICOMETRIA ── */
+.plico-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.plico-card { background: var(--green-xpale); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; }
+.plico-card-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.plico-input-wrap { display: flex; align-items: center; gap: 6px; }
+.plico-input {
+  background: #fff; border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  padding: 8px 10px; color: var(--text); font-size: 16px; font-weight: 700;
+  font-family: 'Nunito', sans-serif; outline: none; width: 80px; transition: border-color .15s;
+}
+.plico-input:focus { border-color: var(--green-mid); }
+.plico-unit { font-size: 12px; color: var(--text3); font-weight: 600; }
+.plico-hist-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; display: flex; gap: 12px; align-items: flex-start; }
+.plico-hist-date { font-size: 11px; font-weight: 700; color: var(--text3); min-width: 80px; white-space: nowrap; }
+.plico-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+.plico-chip { background: var(--green-pale); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--green); }
+.plico-total { background: var(--green); color: #fff; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+
+/* ── NOTE ── */
+.note-area {
+  background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  padding: 14px 16px; color: var(--text); font-size: 14px; font-family: 'Nunito', sans-serif;
+  min-height: 130px; outline: none; resize: none; width: 100%; line-height: 1.6; font-weight: 500;
+  transition: border-color .15s, box-shadow .15s;
+}
+.note-area:focus { border-color: var(--green-mid); box-shadow: 0 0 0 3px rgba(26,61,43,.08); }
+.note-hist { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 10px; }
+.note-hist-date { font-size: 11px; font-weight: 700; color: var(--text3); margin-bottom: 6px; }
+.note-hist-text { font-size: 13px; color: var(--text2); line-height: 1.65; font-weight: 500; }
+
+/* ── DOMANDE ── */
+.ask-area {
+  background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  padding: 14px 16px; color: var(--text); font-size: 14px; font-family: 'Nunito', sans-serif;
+  min-height: 120px; outline: none; resize: none; width: 100%; line-height: 1.6; font-weight: 500;
+  transition: border-color .15s;
+}
+.ask-area:focus { border-color: var(--green-mid); box-shadow: 0 0 0 3px rgba(26,61,43,.08); }
+.ask-sent { display: none; background: var(--green-pale); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 14px 18px; font-size: 14px; font-weight: 600; color: var(--green); margin-top: 12px; }
+
+/* ── CLIENT DATA ROWS ── */
+.data-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.data-row:last-child { border-bottom: none; }
+.data-label { font-size: 13px; color: var(--text2); font-weight: 500; }
+.data-value { font-size: 13px; color: var(--green); font-weight: 700; text-align: right; max-width: 60%; }
+
+/* ── STATUS SELECT ── */
+.status-select {
+  background: var(--bg); border: 1px solid var(--border2); border-radius: 20px;
+  padding: 7px 16px; color: var(--green); font-size: 13px; font-weight: 700;
+  font-family: 'Nunito', sans-serif; outline: none; cursor: pointer;
+}
+.status-select:focus { border-color: var(--green); }
+
+/* ── TOGGLE GROUP ── */
+.toggle-group { display: flex; gap: 6px; }
+.toggle-btn {
+  padding: 7px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2);
+  background: transparent; color: var(--text2); font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: 'Nunito', sans-serif; transition: all .15s;
+}
+.toggle-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+.toggle-btn:hover:not(.active) { border-color: var(--green); color: var(--green); }
+
+/* ── MODAL ── */
+#foto-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 300; align-items: center; justify-content: center; }
+#foto-modal.open { display: flex; }
+#foto-modal img { max-width: 90vw; max-height: 90vh; border-radius: var(--radius); box-shadow: 0 8px 40px rgba(0,0,0,.4); }
+#foto-modal-close { position: absolute; top: 20px; right: 24px; background: rgba(255,255,255,.15); border: none; color: white; font-size: 20px; cursor: pointer; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+/* ── SAVE INDICATOR ── */
+#save-indicator {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--green); color: #fff;
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700;
+  opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 400;
+  box-shadow: var(--shadow-md);
+}
+#save-indicator.show { opacity: 1; }
+
+/* ── MISC ── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.list-gap { display: flex; flex-direction: column; gap: 10px; }
+.inline-form { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.inline-form .field { flex: 1; min-width: 130px; }
+.empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
+.empty-state .e-icon { font-size: 36px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; line-height: 1.65; font-weight: 500; }
+input[type=file] { display: none; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+@media (max-width:900px) {
+  .sidebar { width: 190px; }
+  .main { margin-left: 190px; padding: 20px; }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+  .plico-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── ADMIN PANEL ── */
+#admin-panel { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 200; align-items: center; justify-content: center; }
+#admin-panel.open { display: flex; }
+.admin-box {
+  background: #fff; border-radius: var(--radius); padding: 28px 32px;
+  width: 500px; max-height: 85vh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 18px;
+  box-shadow: var(--shadow-md);
+}
+.admin-box h2 { font-size: 17px; font-weight: 700; color: var(--green); }
+.admin-box h3 { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; }
+.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.account-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+.code-pill { background: var(--green-pale); color: var(--green); border: 1px solid var(--border2); padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: .06em; }
+/* modalità sola lettura */
+.readonly-mode .nutri-only { display: none !important; }
+.readonly-mode .btn-primary { display: none !important; }
+.readonly-mode input:not(#ask-text), .readonly-mode textarea:not(#ask-text), .readonly-mode select { pointer-events: none; opacity: .7; }
+.readonly-mode .nav-item[onclick*="admin"] { display: none; }
+.readonly-mode .nav-item[onclick*="note"] { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div class="admin-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2>⚙️ Gestione Clienti</h2>
+      <button class="btn-ghost" onclick="closeAdmin()">✕ Chiudi</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <h3>➕ Nuovo cliente</h3>
+      <div class="admin-grid">
+        <div class="field"><label>Nome completo</label><input type="text" id="admin-nome" placeholder="Mario Rossi"></div>
+        <div class="field"><label>Codice accesso</label><input type="text" id="admin-code" placeholder="MARIO2026"></div>
+        <div class="field" style="grid-column:1/-1"><label>Email cliente</label><input type="email" id="admin-email" placeholder="mario@email.com"></div>
+      </div>
+      <button class="btn-primary" onclick="createAccount()" style="align-self:flex-start;">Crea account</button>
+    </div>
+    <hr class="divider">
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <h3>👥 Account attivi</h3>
+      <div class="list-gap" id="admin-list"></div>
+    </div>
+    <hr class="divider">
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <h3>📧 Tua email (per domande clienti)</h3>
+      <div class="field"><label>Email nutrizionista</label><input type="email" id="admin-my-email" placeholder="tua@email.com" oninput="saveMyEmail()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="topbar-logo" href="#">
+      <img src="https://nicolad76.sg-host.com/wp-content/uploads/2026/02/Logo-neacea-bianco-pittogramma.png" alt="Neacea"
+           onerror="this.style.display='none';this.nextSibling.style.display='block'">
+      <span class="topbar-logo-text">neacea</span>
+    </a>
+    <div class="topbar-divider"></div>
+    <div class="topbar-client">
+      <div class="client-name" id="tb-name">—</div>
+      <div class="client-sub">Scheda Nutrizionale · Neacea Studio</div>
+    </div>
+    <div class="topbar-badges">
+      <div class="badge" id="tb-age">— anni</div>
+      <div class="badge highlight" id="tb-weight">— kg</div>
+      <div class="badge" id="tb-bmi">BMI —</div>
+    </div>
+    <button class="topbar-btn" id="admin-btn" onclick="openAdmin()" style="display:none">⚙️ Gestione</button>
+    <button class="topbar-btn" onclick="generaReport()" style="background:var(--gold);color:#1a1200;font-weight:700;border:none;">📄 Report PDF</button>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="nav-group">Percorso</div>
+    <button class="nav-item active" onclick="showSection('progressione',this)"><span class="nav-icon">📊</span> Progressione</button>
+    <button class="nav-item" onclick="showSection('visbody',this)"><span class="nav-icon">🔬</span> Scansioni Corporee</button>
+    <button class="nav-item" onclick="showSection('foto',this)"><span class="nav-icon">📸</span> Foto Visite</button>
+    <div class="nav-group">Valutazione</div>
+    <button class="nav-item" onclick="showSection('plicometria',this)"><span class="nav-icon">📐</span> Plicometria</button>
+    <button class="nav-item" onclick="showSection('note',this)"><span class="nav-icon">📝</span> Note Nutrizionista</button>
+    <div class="nav-group">Profilo</div>
+    <button class="nav-item" onclick="showSection('cliente',this)"><span class="nav-icon">👤</span> Dati Cliente</button>
+    
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- ── PROGRESSIONE ── -->
+    <div class="section active" id="sec-progressione">
+      <div class="section-title">Progressione</div>
+      <div class="section-sub">Dati aggiornati dalle scansioni Visbody e dalle misure manuali</div>
+      <div class="grid-4" style="margin-bottom:20px;">
+        <div class="stat-card"><div class="stat-label">Peso attuale</div><div class="stat-value" id="sp-peso">—<span>kg</span></div><div class="stat-delta neu" id="sp-peso-d">nessun confronto</div></div>
+        <div class="stat-card"><div class="stat-label">Massa grassa</div><div class="stat-value" id="sp-grassa">—<span>kg</span></div><div class="stat-delta neu" id="sp-grassa-d">—</div></div>
+        <div class="stat-card"><div class="stat-label">Massa muscolare</div><div class="stat-value" id="sp-muscolare">—<span>kg</span></div><div class="stat-delta neu" id="sp-muscolare-d">—</div></div>
+        <div class="stat-card"><div class="stat-label">% Grasso (PGC)</div><div class="stat-value" id="sp-pgc">—<span>%</span></div><div class="stat-delta neu" id="sp-pgc-d">—</div></div>
+        <div class="stat-card"><div class="stat-label">BMI</div><div class="stat-value" id="sp-bmi">—</div><div class="stat-delta neu" id="sp-bmi-d">—</div></div>
+        <div class="stat-card"><div class="stat-label">Score Visbody</div><div class="stat-value" id="sp-score">—</div><div class="stat-delta neu" id="sp-score-d">—</div></div>
+        <div class="stat-card"><div class="stat-label">Età Metabolica</div><div class="stat-value" id="sp-etamet">—<span>anni</span></div><div class="stat-delta neu">da Visbody</div></div>
+        <div class="stat-card"><div class="stat-label">Tasso Metabolico</div><div class="stat-value" id="sp-tassomet">—<span>kcal</span></div><div class="stat-delta neu">basale</div></div>
+        <div class="stat-card"><div class="stat-label">Scansioni totali</div><div class="stat-value" id="sp-scans">—</div><div class="stat-delta neu" id="sp-giorni">— giorni percorso</div></div>
+      </div>
+      <div id="prog-empty" class="empty-state card">
+        <div class="e-icon">📋</div>
+        <p>Nessuna scansione ancora.<br>Vai in <strong>Scansioni Visbody</strong> per importare il primo report.</p>
+      </div>
+      <div id="prog-charts" style="display:none;">
+        <div class="grid-2" style="margin-bottom:16px;">
+          <div class="card"><div class="chart-label">Peso</div><div class="chart-sub">kg nel tempo</div><div class="chart-wrap"><canvas id="c-peso"></canvas></div></div>
+          <div class="card"><div class="chart-label">Massa Grassa vs Muscolare</div><div class="chart-sub">kg nel tempo</div><div class="chart-wrap"><canvas id="c-comp"></canvas></div></div>
+          <div class="card"><div class="chart-label">% Grasso Corporeo (PGC)</div><div class="chart-sub">percentuale nel tempo</div><div class="chart-wrap"><canvas id="c-pgc"></canvas></div></div>
+          <div class="card"><div class="chart-label">BMI</div><div class="chart-sub">indice di massa corporea</div><div class="chart-wrap"><canvas id="c-bmi"></canvas></div></div>
+          <div class="card" id="card-fase" style="display:none;"><div class="chart-label">Angolo di Fase</div><div class="chart-sub">gradi a 50 KHz &mdash; Maltron</div><div class="chart-wrap"><canvas id="c-fase"></canvas></div></div>
+        </div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">📏 Circonferenze</div>
+          <div class="grid-2">
+            <div><div class="chart-label">Vita</div><div class="chart-sub">cm nel tempo</div><div class="chart-wrap"><canvas id="c-vita"></canvas></div></div>
+            <div><div class="chart-label">Fianchi</div><div class="chart-sub">cm nel tempo</div><div class="chart-wrap"><canvas id="c-fianchi"></canvas></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Aggiungi misura manuale</div>
+        <div class="inline-form">
+          <div class="field"><label>Tipo</label>
+            <select id="manual-type">
+              <option value="peso">Peso (kg)</option>
+              <option value="vita">Vita (cm)</option>
+              <option value="fianchi">Fianchi (cm)</option>
+              <option value="muscolare">Massa muscolare (kg)</option>
+            </select>
+          </div>
+          <div class="field"><label>Valore</label><input type="number" id="manual-val" step="0.1" placeholder="0.0"></div>
+          <div class="field"><label>Data</label><input type="date" id="manual-date"></div>
+          <button class="btn-primary" onclick="addManual()" style="align-self:flex-end;margin-bottom:0;">+ Aggiungi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VISBODY ── -->
+    <div class="section" id="sec-visbody">
+      <div class="section-title">Scansioni Corporee</div>
+      <div class="section-sub">Importa i report PDF Visbody o Maltron BioScan per aggiornare automaticamente la progressione</div>
+      <div class="toggle-group" style="margin-bottom:16px;">
+        <button class="toggle-btn active" id="tab-visbody" onclick="switchScanTab('visbody')">🔬 Visbody</button>
+        <button class="toggle-btn" id="tab-maltron" onclick="switchScanTab('maltron')">⚡ Maltron BioScan</button>
+      </div>
+      <div id="panel-visbody">
+        <div class="card" style="margin-bottom:20px;">
+          <label for="visbody-input">
+            <div class="drop-zone" id="visbody-drop">
+              <div class="drop-icon">🔬</div>
+              <div class="drop-text">Carica report PDF Visbody</div>
+              <div class="drop-sub">Trascina qui o clicca per selezionare · PDF generato da Visbody</div>
+            </div>
+          </label>
+          <input type="file" id="visbody-input" accept=".pdf" multiple onchange="handleVisbody(this.files)">
+        </div>
+        <div class="card">
+          <div class="card-title">Storico Visbody — <span id="scan-count">0</span></div>
+          <div class="list-gap" id="scan-list">
+            <div class="empty-state"><div class="e-icon">📄</div><p>Nessuna scansione importata.</p></div>
+          </div>
+        </div>
+      </div>
+      <div id="panel-maltron" style="display:none;">
+        <div class="card" style="margin-bottom:20px;">
+          <label for="maltron-input">
+            <div class="drop-zone" id="maltron-drop">
+              <div class="drop-icon">⚡</div>
+              <div class="drop-text">Carica report PDF Maltron BioScan</div>
+              <div class="drop-sub">Trascina qui o clicca per selezionare · BioScan touch i8</div>
+            </div>
+          </label>
+          <input type="file" id="maltron-input" accept=".pdf" multiple onchange="handleMaltron(this.files)">
+        </div>
+        <div class="card">
+          <div class="card-title">Storico Maltron — <span id="maltron-count">0</span></div>
+          <div class="list-gap" id="maltron-list">
+            <div class="empty-state"><div class="e-icon">📄</div><p>Nessuna scansione Maltron importata.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FOTO ── -->
+    <div class="section" id="sec-foto">
+      <div class="section-title">Foto Visite</div>
+      <div class="section-sub">Documentazione fotografica del percorso</div>
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('ft','tab-gall',this)">Galleria</button>
+        <button class="tab" onclick="showTab('ft','tab-cf',this)">Confronto Prima / Dopo</button>
+      </div>
+      <div id="ft">
+        <div class="tab-content active" id="tab-gall">
+          <div class="card" style="margin-bottom:20px;">
+            <div class="drop-zone" id="foto-drop" onclick="document.getElementById('foto-input').click()">
+                <div class="drop-icon">📷</div>
+                <div class="drop-text">Aggiungi foto visita</div>
+                <div class="drop-sub">JPG, PNG, HEIC · Puoi caricare più foto contemporaneamente</div>
+              </div>
+            <input type="file" id="foto-input" accept="image/*" multiple onchange="handleFotoSelect(this)">
+            <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+              <div class="field"><label>Data visita</label><input type="date" id="foto-date"></div>
+              <div class="field"><label>Peso rilevato (kg)</label><input type="number" id="foto-peso" step="0.1" placeholder="—"></div>
+              <div class="field"><label>Note visita</label><input type="text" id="foto-note" placeholder="—"></div>
+            </div>
+            <div style="margin-top:12px;font-size:13px;font-weight:600;color:var(--text2)" id="foto-count">📷 0 foto selezionate</div>
+            <div id="foto-preview-area" style="display:none;margin-top:12px;">
+              <div id="foto-thumbnails" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
+            </div>
+            <button class="btn-primary" style="margin-top:14px;" onclick="salvaVisita()">Salva visita</button>
+          </div>
+          <div id="foto-list"></div>
+        </div>
+        <div class="tab-content" id="tab-cf">
+          <!-- Selettori visita stile PT -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+            <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+              <div style="background:var(--green);color:white;padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">📅 Prima</div>
+              <div style="padding:10px 12px;background:var(--green-xpale);">
+                <select id="confronto-prima" onchange="fotoSelPrima=0; aggiornaConfronto()" style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'Nunito',sans-serif;background:white;outline:none;">
+                  <option value="">— seleziona visita —</option>
+                </select>
+              </div>
+              <div id="confronto-foto-prima-wrap" style="display:none;padding:8px 12px;background:var(--green-xpale);border-top:1px solid var(--border);">
+                <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600;">📷 Scegli la foto:</div>
+                <div id="confronto-foto-prima-thumbs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+              </div>
+              <div id="confronto-img-prima" class="confronto-empty" style="height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);font-size:13px;background:var(--bg);">
+                <div style="font-size:32px;margin-bottom:8px;">🖼️</div>
+                <p>Seleziona una visita</p>
+              </div>
+            </div>
+            <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+              <div style="background:#8a6d1f;color:white;padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">🏆 Dopo</div>
+              <div style="padding:10px 12px;background:var(--green-xpale);">
+                <select id="confronto-dopo" onchange="fotoSelDopo=0; aggiornaConfronto()" style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'Nunito',sans-serif;background:white;outline:none;">
+                  <option value="">— seleziona visita —</option>
+                </select>
+              </div>
+              <div id="confronto-foto-dopo-wrap" style="display:none;padding:8px 12px;background:var(--green-xpale);border-top:1px solid var(--border);">
+                <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600;">📷 Scegli la foto:</div>
+                <div id="confronto-foto-dopo-thumbs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+              </div>
+              <div id="confronto-img-dopo" class="confronto-empty" style="height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);font-size:13px;background:var(--bg);">
+                <div style="font-size:32px;margin-bottom:8px;">🖼️</div>
+                <p>Seleziona una visita</p>
+              </div>
+            </div>
+          </div>
+          <!-- Modalità -->
+          <div id="confronto-mode-btns" style="display:none;gap:8px;margin-bottom:12px;">
+            <button class="toggle-btn active" id="btn-aff" onclick="setModoConfronto('affiancato',this)">⬛⬛ Affiancato</button>
+            <button class="toggle-btn" id="btn-sl" onclick="setModoConfronto('slider',this)">◀▶ Slider</button>
+          </div>
+          <!-- Vista affiancata -->
+          <div id="confronto-affiancato" style="display:none;margin-top:4px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div style="border-radius:10px;overflow:hidden;">
+                <div style="background:var(--green);color:white;font-size:11px;font-weight:700;padding:5px 12px;text-align:center;">PRIMA</div>
+                <div style="height:320px;background:#1a3d2b;overflow:hidden;">
+                  <img id="af-img-prima" src="" style="width:100%;height:100%;object-fit:contain;object-position:center top;cursor:zoom-in;" onclick="openMod(this.src)">
+                </div>
+                <div id="af-label-prima" style="background:var(--green-pale);padding:6px 12px;font-size:12px;font-weight:600;color:var(--green);text-align:center;"></div>
+              </div>
+              <div style="border-radius:10px;overflow:hidden;">
+                <div style="background:#8a6d1f;color:white;font-size:11px;font-weight:700;padding:5px 12px;text-align:center;">DOPO</div>
+                <div style="height:320px;background:#1a3d2b;overflow:hidden;">
+                  <img id="af-img-dopo" src="" style="width:100%;height:100%;object-fit:contain;object-position:center top;cursor:zoom-in;" onclick="openMod(this.src)">
+                </div>
+                <div id="af-label-dopo" style="background:#fdf6e3;padding:6px 12px;font-size:12px;font-weight:600;color:#8a6d1f;text-align:center;"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Vista slider -->
+          <div id="confronto-slider-wrap" style="display:none;margin-top:12px;border-radius:10px;overflow:hidden;">
+            <div id="slider-main" style="position:relative;width:100%;height:420px;cursor:col-resize;user-select:none;background:#1a3d2b;overflow:hidden;"
+                 onmousedown="sliderStart(event)" ontouchstart="sliderTouchStart(event)">
+              <!-- foto dopo — sfondo pieno -->
+              <img id="slider-img-dopo" src="" alt=""
+                   style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;pointer-events:none;">
+              <!-- foto prima — clip a sinistra -->
+              <div id="slider-prima-wrap" style="position:absolute;top:0;left:0;bottom:0;width:50%;overflow:hidden;">
+                <img id="slider-img-prima" src="" alt=""
+                     style="position:absolute;top:0;left:0;height:100%;width:auto;max-width:none;object-fit:contain;pointer-events:none;">
+              </div>
+              <!-- linea divisoria -->
+              <div id="slider-handle" style="position:absolute;top:0;bottom:0;left:50%;width:3px;background:white;transform:translateX(-50%);z-index:10;pointer-events:none;">
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#1a3d2b;box-shadow:0 2px 12px rgba(0,0,0,.4);">◀▶</div>
+              </div>
+              <!-- etichette -->
+              <span style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);color:#f0a050;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;z-index:11;pointer-events:none;">PRIMA</span>
+              <span style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.6);color:#6dd68e;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;z-index:11;pointer-events:none;">DOPO</span>
+            </div>
+            <div style="text-align:center;padding:8px;font-size:11px;color:var(--text2);background:var(--green-pale);">◀ Trascina per confrontare ▶</div>
+          </div><!-- Vista slider -->
+          <div id="confronto-slider-wrap" style="display:none;margin-top:4px;border-radius:10px;overflow:hidden;">
+            <div id="slider-main" style="position:relative;width:100%;aspect-ratio:3/4;cursor:col-resize;user-select:none;background:#e8f2ec;"
+                 onmousedown="sliderStart(event)" ontouchstart="sliderTouchStart(event)">
+              <img id="slider-img-dopo" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+              <div id="slider-prima-wrap" style="position:absolute;inset:0;overflow:hidden;width:50%;">
+                <img id="slider-img-prima" src="" style="position:absolute;top:0;left:0;height:100%;width:auto;max-width:none;object-fit:cover;">
+              </div>
+              <div id="slider-handle" style="position:absolute;top:0;bottom:0;left:50%;width:2px;background:white;transform:translateX(-50%);z-index:3;pointer-events:none;">
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--green);box-shadow:0 2px 10px rgba(0,0,0,.3);">◀▶</div>
+              </div>
+              <span style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,.5);color:#f0a050;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;z-index:4;">PRIMA</span>
+              <span style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.5);color:#6dd68e;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;z-index:4;">DOPO</span>
+            </div>
+            <div style="text-align:center;padding:8px;font-size:11px;color:var(--text2);background:var(--green-pale);">◀ Trascina per confrontare ▶</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PLICOMETRIA ── -->
+    <div class="section" id="sec-plicometria">
+      <div class="section-title">Plicometria</div>
+      <div class="section-sub">Misurazioni delle pliche cutanee — compilate durante la visita</div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">Nuova misurazione</div>
+        <div class="field" style="max-width:220px;margin-bottom:20px;"><label>Data misurazione</label><input type="date" id="plico-date"></div>
+        <div class="plico-grid" id="plico-inputs">
+          <!-- built by JS -->
+        </div>
+        <div style="margin-top:16px;display:flex;align-items:center;gap:16px;">
+          <div style="font-size:13px;color:var(--text2);font-weight:600;">Somma totale: <span id="plico-total-val" style="color:var(--green);font-size:16px;font-weight:700;">0 mm</span></div>
+        </div>
+        <div class="field" style="margin-top:16px;"><label>Note plicometriche</label><textarea class="note-area" id="plico-note" placeholder="Osservazioni durante la visita..."></textarea></div>
+        <button class="btn-primary" style="margin-top:14px;" onclick="savePlico()">Salva misurazione</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Storico misurazioni</div>
+        <div class="list-gap" id="plico-hist-list">
+          <div class="empty-state"><div class="e-icon">📐</div><p>Nessuna misurazione ancora.</p></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;" id="plico-chart-card" style="display:none;">
+        <div class="chart-label">Somma pliche nel tempo</div><div class="chart-sub">mm</div>
+        <div class="chart-wrap"><canvas id="c-plico"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ── NOTE ── -->
+    <div class="section" id="sec-note">
+      <div class="section-title">Note Nutrizionista</div>
+      <div class="section-sub">Osservazioni private — visibili solo al nutrizionista</div>
+      <div class="card" style="margin-bottom:20px;">
+        <textarea class="note-area" id="note-editor" placeholder="Scrivi una nota per questo cliente..."></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+          <span style="font-size:12px;font-weight:600;color:var(--text3)" id="note-saved-label">—</span>
+          <button class="btn-primary" onclick="saveNote()">Salva nota</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Storico note</div>
+        <div id="note-hist-list"><div class="empty-state"><div class="e-icon">📝</div><p>Nessuna nota salvata.</p></div></div>
+      </div>
+    </div>
+
+    <!-- ── CLIENTE ── -->
+    <div class="section" id="sec-cliente">
+      <div class="section-title">Dati Cliente</div>
+      <div class="section-sub">Anagrafica, obiettivi e informazioni cliniche</div>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card"><div class="card-title">Dati Personali</div><div id="dp-personal"></div></div>
+        <div class="card">
+          <div class="card-title">Dati Fisici & Obiettivi</div><div id="dp-physical"></div>
+          <hr class="divider">
+          <div class="card-title" style="margin-top:0;">Allergie & Clinica</div><div id="dp-clinical"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Modifica dati</div>
+        <div class="grid-3">
+          <div class="field"><label>Nome</label><input type="text" id="e-nome" placeholder="Nome"></div>
+          <div class="field"><label>Cognome</label><input type="text" id="e-cognome" placeholder="Cognome"></div>
+          <div class="field"><label>Data di nascita</label><input type="date" id="e-dob"></div>
+          <div class="field"><label>Altezza (cm)</label><input type="number" id="e-altezza" placeholder="170"></div>
+          <div class="field"><label>Peso iniziale (kg)</label><input type="number" id="e-peso-init" step="0.1" placeholder="70.0"></div>
+          <div class="field"><label>Email</label><input type="email" id="e-email" placeholder="email@email.com"></div>
+          <div class="field" style="grid-column:1/-1"><label>Obiettivo principale</label><input type="text" id="e-obiettivo" placeholder="es. Dimagrimento, miglioramento composizione..."></div>
+          <div class="field" style="grid-column:1/-1"><label>Allergie / Intolleranze</label><textarea id="e-allergie" placeholder="es. Lattosio, glutine..."></textarea></div>
+          <div class="field" style="grid-column:1/-1"><label>Patologie rilevanti</label><textarea id="e-patologie" placeholder="—"></textarea></div>
+          <div class="field" style="grid-column:1/-1"><label>Farmaci e integratori</label><textarea id="e-farmaci" placeholder="—"></textarea></div>
+        </div>
+        <button class="btn-primary" style="margin-top:18px;" onclick="saveClient()">Salva dati cliente</button>
+      </div>
+
+      <!-- EXPORT / IMPORT -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">Backup Dati Cliente</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6;">
+          Esporta tutti i dati del cliente (foto, plichi, note, scansioni) in un file JSON da conservare come backup.
+          Importa per ripristinarli su qualsiasi browser o dispositivo.
+        </p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn-primary" onclick="esportaCliente()">📥 Esporta cliente</button>
+          <label style="cursor:pointer;">
+            <span class="btn-ghost" style="display:inline-block;padding:11px 22px;font-size:13px;font-weight:700;">📤 Importa cliente</span>
+            <input type="file" accept=".json" style="display:none;" onchange="importaCliente(this)">
+          </label>
+        </div>
+        <div id="import-status" style="margin-top:10px;font-size:13px;display:none;"></div>
+      </div>
+    </div>
+
+
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- FOTO MODAL -->
+<div id="foto-modal">
+  <button id="foto-modal-close" onclick="closeMod()">✕</button>
+  <img id="modal-img" src="" alt="">
+</div>
+
+<div id="save-indicator" class="nutri-only">✓ Salvato</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── CONFIG ──────────────────────────────────────────────
+const ADMIN_CODE = 'NEACEA2026ADMIN';
+const SHEET_API  = 'https://script.google.com/macros/s/AKfycbwmW3o62dZw46JbNklTAlVv3xjt9qb0_8LVDwU38jk5pH1QTWz3f1KzG-JGpLJdYHxW/exec';
+const PLICHE = ['addome','pettorale','coscia','soprailliaca','sottoscapolare','tricipite','ascellare'];
+const PLICHE_LABELS = { addome:'Addome', pettorale:'Pettorale', coscia:'Coscia', soprailliaca:'Soprailliaca', sottoscapolare:'Sottoscapolare', tricipite:'Tricipite', ascellare:'Ascellare media' };
+
+let charts = {};
+let pendingFotos = [];
+let cfMode = 'affiancato';
+
+// ── STORAGE ─────────────────────────────────────────────
+const NS = 'nn2_'; // namespace
+function get(k, def) { try { return JSON.parse(localStorage.getItem(NS+k) ?? 'null') ?? def; } catch(e) { return def; } }
+function set(k, v) { localStorage.setItem(NS+k, JSON.stringify(v)); showSaved(); }
+// Visite con foto — chiave per-cliente così persistono cambiando email
+function getVisteCliente(email) { try { return JSON.parse(localStorage.getItem('nn2_visite_'+(email||'')) ?? '[]') ?? []; } catch(e) { return []; } }
+function setVisteCliente(email, v) { localStorage.setItem('nn2_visite_'+(email||''), JSON.stringify(v)); }
+function getPlicoCliente(email) { try { return JSON.parse(localStorage.getItem('nn2_plico_'+(email||'')) ?? '[]') ?? []; } catch(e) { return []; } }
+function setPlicoCliente(email, v) { localStorage.setItem('nn2_plico_'+(email||''), JSON.stringify(v)); }
+function getNoteCliente(email) { try { return JSON.parse(localStorage.getItem('nn2_notes_'+(email||'')) ?? '[]') ?? []; } catch(e) { return []; } }
+function setNoteCliente(email, v) { localStorage.setItem('nn2_notes_'+(email||''), JSON.stringify(v)); }
+function getMyEmail() { return localStorage.getItem('nn2_myemail') || ''; }
+function saveMyEmail() { localStorage.setItem('nn2_myemail', document.getElementById('admin-my-email').value); }
+function getAccounts() { try { return JSON.parse(localStorage.getItem('nn2_accounts')||'{}'); } catch(e) { return {}; } }
+function setAccounts(a) { localStorage.setItem('nn2_accounts', JSON.stringify(a)); }
+
+// ── BOOT — no login, load directly ──────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(location.search);
+
+  // Modalità nutrizionista con cliente pre-selezionato
+  const clienteEmail = params.get('cliente');
+  const isNutri = params.get('nutri') === '1';
+  const isReadOnly = clienteEmail && !isNutri; // cliente vede la sua scheda
+
+  if (params.get('admin') === ADMIN_CODE) {
+    document.getElementById('admin-btn').style.display = 'flex';
+  }
+
+  setDefaultDates();
+  buildPlicoInputs();
+
+  // Se c'è un cliente nell'URL, cambia namespace e carica i dati dal Sheet
+  if (clienteEmail) {
+    // Namespace dedicato per questo cliente
+    window._clienteEmail = clienteEmail;
+    window._NS_override = 'nn2_' + btoa(clienteEmail.toLowerCase()).replace(/=/g,'') + '_';
+
+    // Carica i dati anamnesi dal Sheet se non già in localStorage
+    const clienteCached = localStorage.getItem(window._NS_override + 'client');
+    if (!clienteCached) {
+      await caricaClienteRemoto(clienteEmail);
+    }
+
+    // Modalità sola lettura per il cliente
+    if (isReadOnly) {
+      document.body.classList.add('readonly-mode');
+      // Mostra banner cliente
+      document.getElementById('client-banner').style.display = 'flex';
+      // Nascondi elementi riservati al nutrizionista
+      document.querySelectorAll('.nutri-only').forEach(el => el.style.display = 'none');
+    } else {
+      // Nutrizionista con cliente pre-selezionato
+      document.getElementById('admin-btn').style.display = 'flex';
+    }
+  }
+
+  renderAll();
+  const myEmail = getMyEmail();
+  if (document.getElementById('admin-my-email')) document.getElementById('admin-my-email').value = myEmail;
+  renderAdminList();
+  updateTopbar();
+
+  // Aggiorna email nutrizionista per la sezione domande
+});
+
+// Carica i dati anamnesi di un cliente dal Google Sheet
+async function caricaClienteRemoto(email) {
+  try {
+    const url = SHEET_API + '?action=getCliente&email=' + encodeURIComponent(email);
+    const res = await fetch(url);
+    const json = await res.json();
+    if (!json.success || !json.cliente) { console.warn('Cliente non trovato:', json.error); return; }
+    const c = json.cliente; // chiavi minuscole dallo script v4
+
+    const allergie = [
+      c.celiachia && c.celiachia !== 'No' ? c.celiachia : '',
+      c.allergie  && c.allergie  !== 'Nessuna' ? c.allergie : '',
+      c.allergie_altro || '',
+      c.intolleranze && c.intolleranze !== 'Nessuna' ? c.intolleranze : '',
+      c.intolleranze_altro || '',
+    ].filter(Boolean).join(', ');
+
+    set('client', {
+      nome:          c.nome         || '',
+      cognome:       c.cognome      || '',
+      email:         c.email        || email,
+      dob:           c.data_nascita || '',
+      sesso:         c.sesso        || '',
+      altezza:       c.altezza      || '',
+      pesoInit:      c.peso_attuale || '',
+      peso_obiettivo: c.peso_obiettivo || '',
+      telefono:      c.telefono     || '',
+      professione:   c.professione  || '',
+      obiettivo:     c.obiettivo_principale || '',
+      obiettivo_sec: c.obiettivo_secondario || '',
+      motivazione:   c.motivazione  || '',
+      disponibilita: c.disponibilita || '',
+      tempo_disponibile: c.tempo_disponibile || '',
+      sport:         [c.sport, c.sport_tipo, c.ore_sport ? c.ore_sport+'h/sett' : ''].filter(Boolean).join(' — '),
+      tipo_lavoro:   c.tipo_lavoro  || '',
+      ore_sonno:     c.ore_sonno    || '',
+      qualita_sonno: c.qualita_sonno || '',
+      stress:        c.stress       || '',
+      passi:         c.passi_giornalieri || '',
+      regime:        c.regime_alimentare || '',
+      pasti_giorno:  c.pasti_giorno  || '',
+      acqua:         c.acqua         || '',
+      colazione:     c.colazione     || '',
+      alcol:         c.consumo_alcol || '',
+      avversioni:    c.alimenti_avversioni || '',
+      preferiti:     c.alimenti_preferiti  || '',
+      allergie:      allergie,
+      patologie:     [c.patologie, c.patologie_altro].filter(Boolean).join(' — '),
+      sintomi:       [c.sintomi, c.sintomi_altro].filter(Boolean).join(', '),
+      farmaci:       [c.farmaci, c.integratori].filter(Boolean).join(' | '),
+      condizioni:    c.condizioni_sospette || '',
+      gonfiore:      c.gonfiore     || '',
+      reflusso:      c.reflusso     || '',
+      bristol:       c.bristol      || '',
+      peso_massimo:  c.peso_massimo || '',
+      peso_minimo:   c.peso_minimo  || '',
+      note_nutri:    c.note_nutrizionista || '',
+      note_libere:   c.note_libere  || '',
+      id:            c.id           || '',
+      fonte:         c.fonte        || '',
+    });
+  } catch(e) {
+    console.warn('Impossibile caricare cliente remoto:', e);
+  }
+}
+
+
+
+function renderAll() {
+  renderVisbody();
+  renderFotoList();
+  renderPlicoHist();
+  renderNoteHist();
+  renderClient();
+  renderCharts();
+}
+
+// ── ADMIN ────────────────────────────────────────────────
+function openAdmin()  { document.getElementById('admin-panel').classList.add('open'); renderAdminList(); }
+function closeAdmin() { document.getElementById('admin-panel').classList.remove('open'); }
+
+function createAccount() {
+  const nome = document.getElementById('admin-nome').value.trim();
+  const code = document.getElementById('admin-code').value.trim().toUpperCase();
+  const email = document.getElementById('admin-email').value.trim();
+  if (!nome || !code) return;
+  const accs = getAccounts();
+  accs['c'+Date.now()] = { nome, code, email };
+  setAccounts(accs);
+  ['admin-nome','admin-code','admin-email'].forEach(id => document.getElementById(id).value='');
+  renderAdminList();
+}
+function renderAdminList() {
+  const accs = getAccounts();
+  const list = document.getElementById('admin-list');
+  const entries = Object.entries(accs);
+  if (!entries.length) { list.innerHTML = '<div style="font-size:13px;color:var(--text3);font-weight:600;">Nessun account.</div>'; return; }
+  list.innerHTML = entries.map(([id,a]) => `
+    <div class="account-item">
+      <div><div style="font-size:14px;font-weight:700;color:var(--green)">${a.nome}</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${a.email||'—'}</div></div>
+      <div style="display:flex;gap:8px;align-items:center"><span class="code-pill">${a.code}</span>
+      <button class="btn-ghost" style="padding:4px 8px;font-size:11px;" onclick="delAccount('${id}')">✕</button></div>
+    </div>`).join('');
+}
+function delAccount(id) {
+  if (!confirm('Eliminare?')) return;
+  const accs = getAccounts(); delete accs[id]; setAccounts(accs); renderAdminList();
+}
+
+// ── NAV ──────────────────────────────────────────────────
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'progressione') renderCharts();
+}
+function showTab(group, tab, btn) {
+  document.querySelectorAll('#'+group+' .tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#'+group+' .tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(tab).classList.add('active');
+}
+
+// ── DATES ────────────────────────────────────────────────
+function setDefaultDates() {
+  const today = new Date().toISOString().split('T')[0];
+  ['manual-date','foto-date','plico-date'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = today;
+  });
+}
+
+// ── VISBODY ──────────────────────────────────────────────
+async function handleVisbody(files) {
+  const drop = document.getElementById('visbody-drop');
+  const origHTML = drop.innerHTML;
+  drop.innerHTML = '<div class="drop-icon">⏳</div><div class="drop-text">Elaborazione in corso...</div>';
+  let imported = 0;
+  for (const f of files) {
+    if (f.type !== 'application/pdf') continue;
+    const d = await extractVisbody(f);
+    if (d) {
+      const scans = get('scans',[]);
+      // Evita duplicati per la stessa data
+      const exists = scans.find(s => s.date === d.date && s.filename === d.filename);
+      if (!exists) { scans.push(d); scans.sort((a,b)=>new Date(a.date)-new Date(b.date)); set('scans',scans); imported++; }
+    }
+  }
+  drop.innerHTML = origHTML;
+  renderVisbody(); renderCharts(); updateTopbar();
+  if (imported > 0) {
+    drop.querySelector('.drop-text').textContent = `✅ ${imported} scansion${imported>1?'i':'e'} importat${imported>1?'e':'a'}!`;
+    setTimeout(()=>{ drop.querySelector('.drop-text').textContent = 'Carica report PDF Visbody'; }, 3000);
+  } else {
+    drop.querySelector('.drop-text').textContent = '⚠️ Nessun dato estratto — verifica il PDF';
+    setTimeout(()=>{ drop.querySelector('.drop-text').textContent = 'Carica report PDF Visbody'; }, 3000);
+  }
+}
+async function extractVisbody(file) {
+  try {
+    const ab = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data:ab}).promise;
+    let text = '';
+    for (let i=1; i<=pdf.numPages; i++) {
+      const p = await pdf.getPage(i);
+      const c = await p.getTextContent();
+      text += c.items.map(s=>s.str).join(' ') + '\n';
+    }
+    return parseVisbody(text, file.name);
+  } catch(e) { console.error(e); return null; }
+}
+function parseVisbody(text, filename) {
+  // Usa il parser completo estraiDatiVisbody
+  const dati = estraiDatiVisbody(text, filename);
+  const c = dati.composizione || {};
+  const circ = dati.circonferenze || {};
+  return {
+    date:       dati.data || new Date().toISOString().split('T')[0],
+    filename:   filename,
+    peso:       c.peso,
+    muscolare:  c.massa_muscolare,
+    grassa:     c.massa_grassa,
+    pgc:        c.pgc,
+    bmi:        c.imc,
+    score:      dati.punteggio_composizione,
+    vita:       circ.vita_media || circ.vita_alta || circ.vita_bassa,
+    fianchi:    circ.fianchi,
+    etaMet:     c.eta_metabolica,
+    tassoMet:   c.tasso_metabolico,
+    imported:   new Date().toISOString(),
+  };
+}
+
+function estraiDatiVisbody(testo, nomeFile) {
+  const n = (pattern) => {
+    const m = testo.match(pattern);
+    return m ? parseFloat(m[1]) : null;
+  };
+
+  // Data dal testo — formato: 2026-03-19 12:08:12
+  const dataMatch = testo.match(/(\d{4}-\d{2}-\d{2})\s+\d{2}:\d{2}:\d{2}/);
+  const data = dataMatch ? dataMatch[1] : null;
+
+  // Punteggi — prende i primi due numeri seguiti da "punti"
+  const tuttiPunti = [...testo.matchAll(/(\d{2,3})\s+punti/gi)].map(m => parseInt(m[1]));
+
+  // ── SEQUENZA NUMERICA FINALE ────────────────────────────
+  // Tutti i PDF Visbody hanno 10 numeri in sequenza alla fine:
+  // [Peso] [MMS] [MassaGrassa] [PGC] [IMC] [VitaFianchi] [TassoMet] [GrassoVisc] [AcquaIntra] [AcquaExtra]
+  // Tamara:     49.3  20.6  12.1  24.5  20.5  0.85  1184.6  4.0  16.9  10.3
+  // Alessandro: 82.8  42.5   9.6  11.6  27.3  0.84  1965.2  3.0  33.5  20.5
+  let seq = null;
+  const seqMatch = testo.match(
+    /(\d{2,3}\.\d)\s+(\d{2,3}\.\d)\s+(\d{1,2}\.\d)\s+(\d{2}\.\d)\s+(\d{2}\.\d)\s+(\d\.\d{2})\s+(\d{3,4}\.\d)\s+(\d\.\d)\s+(\d{2}\.\d)\s+(\d{2}\.\d)/
+  );
+  if (seqMatch) {
+    seq = {
+      peso:         parseFloat(seqMatch[1]),
+      mms:          parseFloat(seqMatch[2]),
+      massa_grassa: parseFloat(seqMatch[3]),
+      pgc:          parseFloat(seqMatch[4]),
+      imc:          parseFloat(seqMatch[5]),
+      vita_fianchi: parseFloat(seqMatch[6]),
+      tasso_met:    parseFloat(seqMatch[7]),
+      grasso_visc:  parseFloat(seqMatch[8]),
+      acqua_intra:  parseFloat(seqMatch[9]),
+      acqua_extra:  parseFloat(seqMatch[10]),
+    };
+  }
+
+  // ── ETÀ METABOLICA ──────────────────────────────────────
+  // Caso 1 (Tamara):    "Età Metabolica 23 --"
+  // Caso 2 (Alessandro): "Età Metabolica --" + valore dopo "Acqua Corporea kg 54.0 [range] 23"
+  const etaM1 = testo.match(/Età Metabolica\s+(\d{1,3})\s+--/i);
+  const etaM2 = testo.match(/Acqua Corporea\s+kg\s+[\d.]+\s+\[[\d.~]+\]\s+(\d{1,3})/i);
+  const etaMet = etaM1 ? parseInt(etaM1[1]) : (etaM2 ? parseInt(etaM2[1]) : null);
+
+  // ── COMPOSIZIONE CORPOREA ───────────────────────────────
+  const composizione = {
+    peso:               n(/Peso\s+kg\s+([\d.]+)/i)                              || seq?.peso || null,
+    massa_grassa:       n(/Massa Grassa\s+Corporea\s+kg\s+([\d.]+)/i)            || seq?.massa_grassa || null,
+    massa_muscolare:    n(/Massa Muscolare\s+(?:Scheletrica\s+)?kg\s+([\d.]+)/i) || seq?.mms || null,
+    massa_magra:        n(/Massa Magra\s+kg\s+([\d.]+)/i),
+    acqua_corporea:     n(/Acqua\s+Corporea\s+kg\s+([\d.]+)/i),
+    pgc:                seq?.pgc || n(/BFP\s*%\s+([\d.]+)/i) || null,
+    imc:                seq?.imc || null,
+    rapporto_vita_fianchi: seq?.vita_fianchi || n(/Rapporto vita\/fianchi\s+([\d.]+)/i) || null,
+    tasso_metabolico:   seq?.tasso_met || n(/Tasso metabolico[\s\S]{0,30}?([\d]{3,5}\.?\d*)/i) || null,
+    eta_metabolica:     etaMet,
+    grasso_viscerale:   seq?.grasso_visc || null,
+    acqua_intracellulare: seq?.acqua_intra || n(/Acqua\s+intracellulare\s+kg\s+([\d.]+)/i) || null,
+    acqua_extracellulare: seq?.acqua_extra || n(/Acqua\s+extracellulare\s+kg\s+([\d.]+)/i) || null,
+    sali_inorganici:    n(/Sali inorganici\s+([\d.]+)/i),
+    proteina:           n(/Proteina\s+([\d.]+)/i),
+  };
+
+  // Circonferenze
+  const circonferenze = {
+    collo:           n(/Collo\s+([\d.]+)/i),
+    bicipite_sx:     n(/Bicipite Sinistro\s+([\d.]+)/i),
+    bicipite_dx:     n(/Bicipite Destro\s+([\d.]+)/i),
+    petto:           n(/Petto\s+([\d.]+)/i),
+    vita_alta:       n(/Vita alta\s+([\d.]+)/i),
+    vita_media:      n(/Vita media\s+([\d.]+)/i),
+    vita_bassa:      n(/Vita bassa\s+([\d.]+)/i),
+    fianchi:         n(/Fianchi\s+([\d.]+)/i),
+    coscia_sx_pross: n(/Coscia Sinistra\s+Prossimale\s+([\d.]+)/i),
+    coscia_sx_dist:  n(/Coscia Sinistra Distale\s+([\d.]+)/i),
+    coscia_dx_pross: n(/Coscia Destra\s+Prossimale\s+([\d.]+)/i),
+    coscia_dx_dist:  n(/Coscia Destra Distale\s+([\d.]+)/i),
+    polpaccio_sx:    n(/Polpaccio Sinistro\s+([\d.]+)/i),
+    polpaccio_dx:    n(/Polpaccio Destro\s+([\d.]+)/i),
+  };
+
+  // Postura — estrai parametri con valore e conclusione
+  const postura = [];
+  const parametriPostura = [
+    { nome: 'Testa protratta in avanti', pattern: /Testa protratta in avanti\s+([\d.]+cm)/i },
+    { nome: 'Testa inclinata lateralmente', pattern: /Testa inclinata lateralmente\s+([\d.]+°)/i },
+    { nome: 'Spalla arrotondata sinistra', pattern: /Spalla arrotondata a sinistra\s+(-?[\d.]+cm)/i },
+    { nome: 'Spalla arrotondata destra', pattern: /Spalla arrotondata a destra\s+(-?[\d.]+cm)/i },
+    { nome: 'Differenza altezza spalle', pattern: /Differenza di altezza delle\s+spalle\s+(-?[\d.]+°)/i },
+    { nome: 'Traslazione bacino', pattern: /Traslazione anteriore del\s+bacino\s+([\d.]+cm)/i },
+    { nome: 'Ginocchio sinistro', pattern: /Valutazione del ginocchio\s+sinistro\s+([\d.]+°)/i },
+    { nome: 'Ginocchio destro', pattern: /Valutazione del ginocchio\s+destro\s+([\d.]+°)/i },
+  ];
+  const conclMatch = [
+    /Testa protratta[\s\S]{0,20}(Normale|Significativa[^.]+|Lieve[^.]+)/i,
+    /Testa inclinata[\s\S]{0,20}(Normale|Significativa[^.]+|Lieve[^.]+)/i,
+    /Spalla arrotondata a sinistra[\s\S]{0,30}(Normale|Significativa[^.]+|Lieve[^.]+)/i,
+    /Spalla arrotondata a destra[\s\S]{0,30}(Normale|Significativa[^.]+|Lieve[^.]+)/i,
+    /Differenza di altezza[\s\S]{0,30}(Normale|Significativa[^.]+|Lieve[^.]+)/i,
+    /Traslazione anteriore[\s\S]{0,30}(Normale|Significativa[^.]+|Lieve[^.]+)/i,
+    /ginocchio sinistro[\s\S]{0,30}(Normale|Significativa[^.]+|Lieve[^.]+)/i,
+    /ginocchio destro[\s\S]{0,30}(Normale|Significativa[^.]+|Lieve[^.]+)/i,
+  ];
+  parametriPostura.forEach((p, i) => {
+    const m = testo.match(p.pattern);
+    if (m) {
+      const concl = testo.match(conclMatch[i]);
+      postura.push({ nome: p.nome, valore: m[1], conclusione: concl ? concl[1].trim() : '—' });
+    }
+  });
+
+  // Funzionalità spalla
+  const spalla = [];
+  const movSpalla = [
+    { nome: 'Abduzione Sx', pattern: /Abduzione e\s+sollevamento - Mano\s+sinistra\s+([\d.]+)°/i },
+    { nome: 'Abduzione Dx', pattern: /Abduzione e\s+sollevamento - Mano\s+destra\s+([\d.]+)°/i },
+    { nome: 'Anteflessione Sx', pattern: /Anteflessione e\s+sollevamento - Mano\s+sinistra\s+([\d.]+)°/i },
+    { nome: 'Anteflessione Dx', pattern: /Anteflessione e\s+sollevamento - Mano\s+destra\s+([\d.]+)°/i },
+  ];
+  movSpalla.forEach(m => {
+    const match = testo.match(m.pattern);
+    if (match) {
+      const val = parseFloat(match[1]);
+      spalla.push({
+        nome: m.nome,
+        valore: match[1] + '°',
+        valutazione: val >= 180 ? 'Normale ✅' : val >= 160 ? 'Limitata lieve ⚠️' : 'Limitata ❌'
+      });
+    }
+  });
+
+  return {
+    data, nomeFile,
+    punteggio_composizione: tuttiPunti[0] || null,
+    punteggio_postura:      tuttiPunti[1] || null,
+    composizione,
+    circonferenze,
+    postura,
+    spalla,
+  };
+}
+
+
+function renderVisbody() {
+  const scans = get('scans', []);
+  document.getElementById('scan-count').textContent = scans.length;
+  const list = document.getElementById('scan-list');
+  if (!scans.length) {
+    list.innerHTML = '<div class="empty-state"><div class="e-icon">📄</div><p>Nessuna scansione importata.</p></div>';
+    return;
+  }
+  let html = '';
+  scans.forEach(function(s, i) {
+    const chips = [
+      s.peso      ? '⚖️ ' + s.peso + ' kg'         : null,
+      s.muscolare ? '💪 ' + s.muscolare + ' kg mms' : null,
+      s.grassa    ? '🟡 ' + s.grassa + ' kg grassa' : null,
+      s.pgc       ? '📊 PGC ' + s.pgc + '%'         : null,
+      s.bmi       ? '📐 BMI ' + s.bmi               : null,
+      s.score     ? '⭐ Score ' + s.score             : null,
+      s.vita      ? '📏 Vita ' + s.vita + ' cm'      : null,
+      s.fianchi   ? '📏 Fianchi ' + s.fianchi + ' cm': null,
+      s.etaMet    ? '🧬 Età met. ' + s.etaMet + ' anni' : null,
+      s.tassoMet  ? '🔥 ' + s.tassoMet + ' kcal'    : null,
+    ].filter(Boolean);
+
+    html += '<div class="scan-item" style="flex-direction:column;align-items:flex-start;gap:10px;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;width:100%;">';
+    html += '<div class="scan-date">📅 ' + fDate(s.date) + ' <span style="font-size:11px;font-weight:500;color:var(--text3);margin-left:6px;">' + (s.filename || '') + '</span></div>';
+    html += '<button class="btn-del" onclick="delScan(' + i + ')">🗑</button>';
+    html += '</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    if (chips.length) {
+      chips.forEach(function(c) {
+        html += '<span style="background:var(--green-pale);border:1px solid var(--border);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;color:var(--green)">' + c + '</span>';
+      });
+    } else {
+      html += '<span style="font-size:12px;color:var(--text3)">Nessun dato estratto — verifica il formato del PDF</span>';
+    }
+    html += '</div></div>';
+  });
+  list.innerHTML = html;
+}
+function delScan(i) {
+  if (!confirm('Eliminare questa scansione?')) return;
+  const scans=get('scans',[]); scans.splice(i,1); set('scans',scans); renderVisbody(); renderCharts(); updateTopbar();
+}
+
+// drag/drop visbody
+const vDrop = document.getElementById('visbody-drop');
+vDrop.addEventListener('dragover', e=>{e.preventDefault();vDrop.classList.add('drag-over')});
+vDrop.addEventListener('dragleave', ()=>vDrop.classList.remove('drag-over'));
+vDrop.addEventListener('drop', e=>{e.preventDefault();vDrop.classList.remove('drag-over');handleVisbody(e.dataTransfer.files)});
+
+// ── CHARTS ───────────────────────────────────────────────
+function renderCharts() {
+  const scans    = get('scans', []);
+  const mPeso    = get('m_peso', []);
+  const mVita    = get('m_vita', []);
+  const mFianchi = get('m_fianchi', []);
+  const mMus     = get('m_muscolare', []);
+  const hasData  = scans.length || mPeso.length || mVita.length || mFianchi.length || mMus.length;
+
+  document.getElementById('prog-empty').style.display    = hasData ? 'none'  : 'block';
+  document.getElementById('prog-charts').style.display   = hasData ? 'block' : 'none';
+  updateStats(scans);
+  if (!hasData) return;
+
+  const opts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#98b4a5', font: { size: 11, family: 'Nunito', weight: '600' } }, grid: { color: 'rgba(26,61,43,.06)' } },
+      y: { ticks: { color: '#98b4a5', font: { size: 11, family: 'Nunito', weight: '600' } }, grid: { color: 'rgba(26,61,43,.06)' } }
+    },
+    elements: { point: { radius: 4, hoverRadius: 7, backgroundColor: '#1a3d2b' } }
+  };
+
+  // Unisce dati Visbody + misure manuali
+  function merge(field, manuals) {
+    const map = {};
+    scans.forEach(s => { if (s[field] != null) map[s.date] = s[field]; });
+    manuals.forEach(m => { map[m.date] = m.val; });
+    return Object.entries(map).sort((a,b) => a[0].localeCompare(b[0])).map(([date,val]) => ({date,val}));
+  }
+
+  const pesoData    = merge('peso', mPeso);
+  const vitaData    = merge('vita', mVita);
+  const fianchiData = merge('fianchi', mFianchi);
+
+  if (pesoData.length)    mkChart('c-peso',    { labels: pesoData.map(p=>fDate(p.date)),    datasets: [{ data: pesoData.map(p=>p.val),    borderColor: '#1a3d2b', backgroundColor: 'rgba(26,61,43,.06)', tension: .3, fill: true }] }, opts);
+  if (vitaData.length)    mkChart('c-vita',    { labels: vitaData.map(p=>fDate(p.date)),    datasets: [{ data: vitaData.map(p=>p.val),    borderColor: '#1a3d2b', backgroundColor: 'rgba(26,61,43,.06)', tension: .3, fill: true }] }, opts);
+  if (fianchiData.length) mkChart('c-fianchi', { labels: fianchiData.map(p=>fDate(p.date)), datasets: [{ data: fianchiData.map(p=>p.val), borderColor: '#2a5c40', backgroundColor: 'rgba(42,92,64,.06)', tension: .3, fill: true }] }, opts);
+
+  if (scans.length) {
+    const labels = scans.map(s => fDate(s.date));
+    mkChart('c-comp', { labels, datasets: [
+      { label: 'Grassa',    data: scans.map(s=>s.grassa),    borderColor: '#c0392b', backgroundColor: 'transparent', tension: .3 },
+      { label: 'Muscolare', data: scans.map(s=>s.muscolare), borderColor: '#2980b9', backgroundColor: 'transparent', tension: .3 }
+    ]}, { ...opts, plugins: { legend: { display: true, labels: { color: '#5a7a68', font: { size: 11, family: 'Nunito', weight: '600' } } } } });
+    mkChart('c-pgc',  { labels, datasets: [{ data: scans.map(s=>s.pgc),  borderColor: '#e67e22', backgroundColor: 'rgba(230,126,34,.06)', tension: .3, fill: true }] }, opts);
+    mkChart('c-bmi',  { labels, datasets: [{ data: scans.map(s=>s.bmi),  borderColor: '#8e44ad', backgroundColor: 'rgba(142,68,173,.06)', tension: .3, fill: true }] }, opts);
+  }
+}
+function mkChart(id, data, opts) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id); if (!ctx) return;
+  charts[id] = new Chart(ctx, {type:'line', data, options:JSON.parse(JSON.stringify(opts))});
+}
+function updateStats(scans) {
+  if (!scans.length) return;
+  const last=scans[scans.length-1], first=scans[0];
+  const sv = (id,v,u='') => { const el=document.getElementById(id); if(el&&v!=null) el.innerHTML=v+(u?`<span>${u}</span>`:''); };
+  const sd = (id,cur,ref,suf='',inv=false) => {
+    const el=document.getElementById(id); if(!el||cur==null||ref==null) return;
+    const d=cur-ref, sign=d>=0?'+':'';
+    el.className='stat-delta '+(d===0?'neu':(inv?(d>0?'neg':'pos'):(d>0?'pos':'neg')));
+    el.textContent=`${sign}${d.toFixed(1)}${suf} vs inizio`;
+  };
+  sv('sp-peso',last.peso); sv('sp-grassa',last.grassa); sv('sp-muscolare',last.muscolare);
+  sv('sp-pgc',last.pgc,'%'); sv('sp-bmi',last.bmi); sv('sp-score',last.score);
+  sv('sp-etamet',last.etaMet,' anni'); sv('sp-tassomet',last.tassoMet,' kcal');
+  document.getElementById('sp-scans').textContent=scans.length;
+  const days=Math.round((new Date(last.date)-new Date(first.date))/(864e5));
+  document.getElementById('sp-giorni').textContent=`${days} giorni percorso`;
+  sd('sp-peso-d',last.peso,first.peso,' kg',true);
+  sd('sp-grassa-d',last.grassa,first.grassa,' kg',true);
+  sd('sp-muscolare-d',last.muscolare,first.muscolare,' kg',false);
+  sd('sp-pgc-d',last.pgc,first.pgc,'%',true);
+  sd('sp-bmi-d',last.bmi,first.bmi,'',true);
+  sd('sp-score-d',last.score,first.score,'',false);
+}
+function updateTopbar() {
+  // Aggiorna banner cliente se presente
+  const bannerNome = document.getElementById('banner-nome');
+  if (bannerNome) {
+    const cd = get('client', {});
+    const nome = (cd.nome + ' ' + (cd.cognome||'')).trim();
+    if (nome) bannerNome.textContent = nome;
+  }
+  const scans=get('scans',[]), cd=get('client',{});
+  const last=scans.length?scans[scans.length-1]:null;
+  const cd2 = get('client',{});
+  const pesoTb = last?.peso || cd2.pesoInit || cd2.peso_attuale || '';
+  document.getElementById('tb-weight').textContent = pesoTb ? pesoTb + ' kg' : '— kg';
+  const altTb = parseFloat(cd2.altezza);
+  const pesoNum2 = parseFloat(pesoTb);
+  const bmiTb = last?.bmi || (altTb > 0 && pesoNum2 > 0 ? (pesoNum2/((altTb/100)**2)).toFixed(1) : null);
+  document.getElementById('tb-bmi').textContent = bmiTb ? 'BMI ' + bmiTb : 'BMI —';
+  if (cd.dob) { const age=Math.floor((new Date()-new Date(cd.dob))/(365.25*864e5)); document.getElementById('tb-age').textContent=`${age} anni`; }
+  const name = `${cd.nome||''} ${cd.cognome||''}`.trim();
+  document.getElementById('tb-name').textContent = name || 'Scheda Nutrizionale';
+}
+
+// ── MANUAL MEASURES ──────────────────────────────────────
+function addManual() {
+  const type=document.getElementById('manual-type').value;
+  const val=parseFloat(document.getElementById('manual-val').value);
+  const date=document.getElementById('manual-date').value;
+  if (!val||!date) return;
+  const arr=get('m_'+type,[]); arr.push({date,val}); arr.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  set('m_'+type,arr);
+  document.getElementById('manual-val').value='';
+  renderCharts(); updateTopbar();
+}
+
+// ── FOTO ─────────────────────────────────────────────────
+
+// ── VARIABILI FOTO ────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  FOTO VISITE — scritto da zero, nessuna dipendenza
+// ════════════════════════════════════════════════════════
+
+var fotoBuf = []; // foto in attesa di salvataggio
+var fotoSelPrima = 0;
+var fotoSelDopo  = 0;
+var modoConfronto = 'affiancato';
+var sliderDragging = false;
+
+// ── CARICAMENTO ───────────────────────────────────────────
+function handleFotoSelect(input) {
+  leggiFileFoto(Array.from(input.files));
+}
+function handleFotoDrop(e) {
+  e.preventDefault();
+  document.getElementById('foto-drop').classList.remove('drag-over');
+  leggiFileFoto(Array.from(e.dataTransfer.files).filter(function(f){ return f.type.startsWith('image/'); }));
+}
+function leggiFileFoto(files) {
+  if (!files.length) return;
+  fotoBuf = [];
+  var thumbs = document.getElementById('foto-thumbnails');
+  var preview = document.getElementById('foto-preview-area');
+  var counter = document.getElementById('foto-count');
+  thumbs.innerHTML = '';
+  if (preview) preview.style.display = 'block';
+  var loaded = 0;
+  files.forEach(function(file) {
+    var r = new FileReader();
+    r.onload = function(e) {
+      fotoBuf.push({ data: e.target.result, name: file.name });
+      loaded++;
+      if (counter) counter.textContent = '📷 ' + loaded + (loaded===1?' foto selezionata':' foto selezionate');
+      var img = document.createElement('img');
+      img.src = e.target.result;
+      img.style.cssText = 'width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid var(--border);flex-shrink:0;';
+      thumbs.appendChild(img);
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+// ── SALVA VISITA ─────────────────────────────────────────
+function salvaVisita() {
+  if (!fotoBuf.length) { alert('Seleziona almeno una foto.'); return; }
+  var date = document.getElementById('foto-date').value;
+  var peso = document.getElementById('foto-peso').value;
+  var note = document.getElementById('foto-note').value.trim();
+  if (!date) { alert('Inserisci la data della visita.'); return; }
+
+  var email_corrente = localStorage.getItem('nn2_current_email') || '';
+  var visite = getVisteCliente(email_corrente);
+  visite.push({
+    id:    'v' + Date.now(),
+    date:  date,
+    peso:  peso ? parseFloat(peso) : null,
+    note:  note,
+    fotos: fotoBuf.map(function(f){ return { data: f.data, name: f.name }; }),
+  });
+  visite.sort(function(a,b){ return a.date < b.date ? -1 : 1; });
+  setVisteCliente(email_corrente, visite);
+
+  // Reset UI
+  fotoBuf = [];
+  document.getElementById('foto-input').value = '';
+  document.getElementById('foto-thumbnails').innerHTML = '';
+  document.getElementById('foto-count').textContent = '📷 0 foto selezionate';
+  var preview = document.getElementById('foto-preview-area');
+  if (preview) preview.style.display = 'none';
+  document.getElementById('foto-peso').value = '';
+  document.getElementById('foto-note').value = '';
+
+  renderFotoList();
+  updateCFSelects();
+}
+
+// ── GALLERIA ─────────────────────────────────────────────
+function renderFotoList() {
+  var email_corrente = localStorage.getItem('nn2_current_email') || '';
+  var visite = getVisteCliente(email_corrente);
+  var wrap = document.getElementById('foto-list');
+  wrap.innerHTML = '';
+  if (!visite.length) {
+    wrap.innerHTML = '<div class="empty-state card"><div class="e-icon">📷</div><p>Nessuna visita ancora.</p></div>';
+    updateCFSelects();
+    return;
+  }
+  visite.forEach(function(v) {
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.style.marginBottom = '16px';
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);flex-wrap:wrap;';
+    header.innerHTML = '<span style="font-size:14px;font-weight:700;color:var(--green)">📅 ' + fDate(v.date) + '</span>'
+      + (v.peso ? '<span style="background:var(--green-pale);color:var(--green);padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700">⚖️ ' + v.peso + ' kg</span>' : '')
+      + (v.note ? '<span style="font-size:12px;color:var(--text2);font-style:italic">' + v.note + '</span>' : '');
+    var btnDel = document.createElement('button');
+    btnDel.textContent = 'Elimina visita';
+    btnDel.style.cssText = 'margin-left:auto;background:none;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer';
+    btnDel.onclick = (function(id){ return function(){ delVisitaById(id); }; })(v.id);
+    header.appendChild(btnDel);
+    card.appendChild(header);
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px';
+    v.fotos.forEach(function(f, fi) {
+      var thumb = document.createElement('div');
+      thumb.style.cssText = 'position:relative;width:110px;height:130px;border-radius:8px;overflow:hidden;border:2px solid var(--border);flex-shrink:0';
+      var img = document.createElement('img');
+      img.src = f.url || f.data || '';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;cursor:zoom-in';
+      img.onclick = (function(id,i){ return function(){ openMod(id,i); }; })(v.id, fi);
+      thumb.appendChild(img);
+      var bar = document.createElement('div');
+      bar.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:space-between;padding:3px 5px';
+      if (fi > 0) {
+        var bL = document.createElement('button');
+        bL.textContent = '◀';
+        bL.style.cssText = 'background:rgba(255,255,255,.2);border:none;color:white;border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer';
+        bL.onclick = (function(id,i){ return function(e){ e.stopPropagation(); spostaFotoNutri(id,i,-1); }; })(v.id, fi);
+        bar.appendChild(bL);
+      } else { var sp1=document.createElement('span'); sp1.style.width='22px'; bar.appendChild(sp1); }
+      var num = document.createElement('span');
+      num.textContent = (fi+1)+'/'+v.fotos.length;
+      num.style.cssText = 'font-size:9px;color:rgba(255,255,255,.8)';
+      bar.appendChild(num);
+      if (fi < v.fotos.length - 1) {
+        var bR = document.createElement('button');
+        bR.textContent = '▶';
+        bR.style.cssText = 'background:rgba(255,255,255,.2);border:none;color:white;border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer';
+        bR.onclick = (function(id,i){ return function(e){ e.stopPropagation(); spostaFotoNutri(id,i,1); }; })(v.id, fi);
+        bar.appendChild(bR);
+      } else {
+        var bX = document.createElement('button');
+        bX.textContent = '✕';
+        bX.style.cssText = 'background:rgba(200,50,50,.6);border:none;color:white;border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer';
+        bX.onclick = (function(id,i){ return function(e){ e.stopPropagation(); delFotoNutri(id,i); }; })(v.id, fi);
+        bar.appendChild(bX);
+      }
+      thumb.appendChild(bar);
+      grid.appendChild(thumb);
+    });
+    card.appendChild(grid);
+    wrap.appendChild(card);
+  });
+  updateCFSelects();
+}
+
+// ── AZIONI FOTO ───────────────────────────────────────────
+function spostaFotoNutri(id, fi, dir) {
+  var visite = getVisteCliente(localStorage.getItem('nn2_current_email')||'');
+  var v = visite.find(function(x){ return x.id === id; });
+  if (!v) return;
+  var ni = fi + dir;
+  if (ni < 0 || ni >= v.fotos.length) return;
+  var tmp = v.fotos[fi]; v.fotos[fi] = v.fotos[ni]; v.fotos[ni] = tmp;
+  setVisteCliente(em2, visite);
+  renderFotoList();
+}
+function delFotoNutri(id, fi) {
+  if (!confirm('Eliminare questa foto?')) return;
+  var visite = getVisteCliente(localStorage.getItem('nn2_current_email')||'');
+  var v = visite.find(function(x){ return x.id === id; });
+  if (!v) return;
+  v.fotos.splice(fi, 1);
+  var em4=localStorage.getItem('nn2_current_email')||'';
+  if (!v.fotos.length) visite = visite.filter(function(x){ return x.id !== id; });
+  setVisteCliente(em4, visite);
+  renderFotoList();
+}
+function delVisitaById(id) {
+  if (!confirm('Eliminare questa visita e tutte le sue foto?')) return;
+  var em = localStorage.getItem('nn2_current_email') || '';
+  setVisteCliente(em, getVisteCliente(em).filter(function(x){ return x.id !== id; }));
+  renderFotoList();
+}
+function openMod(id, fi) {
+  // Accetta sia (id, fi) che (src) per compatibilità confronto
+  if (typeof fi === 'undefined') {
+    // chiamato con src diretto
+    document.getElementById('modal-img').src = id;
+  } else {
+    var v = get('visite',[]).find(function(x){ return x.id === id; });
+    if (!v || !v.fotos[fi]) return;
+    var foto = v.fotos[fi]; document.getElementById('modal-img').src = foto.url || foto.data || '';
+  }
+  document.getElementById('foto-modal').classList.add('open');
+}
+function closeMod() { document.getElementById('foto-modal').classList.remove('open'); }
+
+// ── CONFRONTO ─────────────────────────────────────────────
+function updateCFSelects() {
+  var email_corrente = localStorage.getItem('nn2_current_email') || '';
+  var visite = getVisteCliente(email_corrente);
+  var opts = '<option value="">— seleziona visita —</option>';
+  visite.forEach(function(v) {
+    opts += '<option value="' + v.id + '">' + fDate(v.date) + (v.peso ? ' · ' + v.peso + ' kg' : '') + '</option>';
+  });
+  var sp = document.getElementById('confronto-prima');
+  var sd = document.getElementById('confronto-dopo');
+  if (!sp || !sd) return;
+  var cp = sp.value, cd = sd.value;
+  sp.innerHTML = opts; sd.innerHTML = opts;
+  if (cp) sp.value = cp;
+  if (cd) sd.value = cd;
+  aggiornaConfronto();
+}
+function aggiornaConfronto() {
+  var idP = document.getElementById('confronto-prima')?.value;
+  var idD = document.getElementById('confronto-dopo')?.value;
+  aggiornaSlotConfronto('prima', idP);
+  aggiornaSlotConfronto('dopo',  idD);
+  var mostraBtns = document.getElementById('confronto-mode-btns');
+  var aff = document.getElementById('confronto-affiancato');
+  var sl  = document.getElementById('confronto-slider-wrap');
+  if (!idP || !idD) {
+    if (mostraBtns) mostraBtns.style.display = 'none';
+    if (aff) aff.style.display = 'none';
+    if (sl)  sl.style.display  = 'none';
+    return;
+  }
+  var visite = getVisteCliente(localStorage.getItem('nn2_current_email')||'');
+  var vP = visite.find(function(x){ return x.id === idP; });
+  var vD = visite.find(function(x){ return x.id === idD; });
+  if (!vP || !vD || !vP.fotos.length || !vD.fotos.length) return;
+  var srcP = vP.fotos[Math.min(fotoSelPrima, vP.fotos.length-1)].data;
+  var srcD = vD.fotos[Math.min(fotoSelDopo,  vD.fotos.length-1)].data;
+  if (mostraBtns) mostraBtns.style.display = 'flex';
+  // Affiancato
+  var afP = document.getElementById('af-img-prima'); if (afP) afP.src = srcP;
+  var afD = document.getElementById('af-img-dopo');  if (afD) afD.src = srcD;
+  var lP  = document.getElementById('af-label-prima'); if (lP) lP.textContent = '📅 ' + fDate(vP.date) + (vP.peso?' · '+vP.peso+' kg':'');
+  var lD  = document.getElementById('af-label-dopo');  if (lD) lD.textContent = '📅 ' + fDate(vD.date) + (vD.peso?' · '+vD.peso+' kg':'');
+  // Slider
+  var sP = document.getElementById('slider-img-prima'); if (sP) sP.src = srcP;
+  var sD = document.getElementById('slider-img-dopo');  if (sD) sD.src = srcD;
+  sliderReset();
+  if (aff) aff.style.display = modoConfronto === 'affiancato' ? 'block' : 'none';
+  if (sl)  sl.style.display  = modoConfronto === 'slider'     ? 'block' : 'none';
+}
+function aggiornaSlotConfronto(slot, id) {
+  var thumbsWrap = document.getElementById('confronto-foto-' + slot + '-wrap');
+  var thumbsCont = document.getElementById('confronto-foto-' + slot + '-thumbs');
+  var imgEl      = document.getElementById('confronto-img-' + slot);
+  if (!id) {
+    if (thumbsWrap) thumbsWrap.style.display = 'none';
+    if (imgEl) { imgEl.innerHTML = '<div style="font-size:28px;margin-bottom:8px;">🖼️</div><p>Seleziona una visita</p>'; }
+    return;
+  }
+  var visite = getVisteCliente(localStorage.getItem('nn2_current_email')||'');
+  var v = visite.find(function(x){ return x.id === id; });
+  if (!v || !v.fotos.length) return;
+  var idx = slot === 'prima' ? Math.min(fotoSelPrima, v.fotos.length-1) : Math.min(fotoSelDopo, v.fotos.length-1);
+  var src = v.fotos[idx].data;
+  if (thumbsWrap && thumbsCont) {
+    if (v.fotos.length > 1) {
+      thumbsWrap.style.display = 'block';
+      thumbsCont.innerHTML = '';
+      v.fotos.forEach(function(f, fi) {
+        var d = document.createElement('div');
+        d.style.cssText = 'width:48px;height:48px;border-radius:6px;overflow:hidden;cursor:pointer;flex-shrink:0;border:2px solid ' + (fi===idx ? 'var(--green)' : 'var(--border)');
+        d.onclick = (function(s,i){ return function(){ selFotoConfronto(s,i); }; })(slot, fi);
+        var img = document.createElement('img');
+        img.src = f.url || f.data || '';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+        d.appendChild(img);
+        thumbsCont.appendChild(d);
+      });
+    } else {
+      thumbsWrap.style.display = 'none';
+    }
+  }
+  if (imgEl) {
+    var imgConf = document.createElement('img');
+    imgConf.src = src;
+    imgConf.style.cssText = 'width:100%;height:220px;object-fit:contain;cursor:zoom-in';
+    imgConf.onclick = function(){ document.getElementById('modal-img').src=this.src; document.getElementById('foto-modal').classList.add('open'); };
+    imgEl.innerHTML = '';
+    imgEl.appendChild(imgConf);
+  }
+}
+function selFotoConfronto(slot, fi) {
+  if (slot === 'prima') fotoSelPrima = fi;
+  else fotoSelDopo = fi;
+  aggiornaConfronto();
+}
+function setModoConfronto(modo, btn) {
+  modoConfronto = modo;
+  document.querySelectorAll('#btn-aff,#btn-sl').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  aggiornaConfronto();
+}
+// ── SLIDER ────────────────────────────────────────────────
+function sliderReset() {
+  var wrap   = document.getElementById('slider-prima-wrap');
+  var handle = document.getElementById('slider-handle');
+  if (wrap)   wrap.style.width = '50%';
+  if (handle) handle.style.left = '50%';
+  // img-prima deve essere larga quanto il contenitore principale
+  var cont = document.getElementById('slider-main');
+  var img  = document.getElementById('slider-img-prima');
+  if (cont && img) {
+    img.style.width = cont.offsetWidth + 'px';
+  }
+}
+function sliderStart(e) { sliderDragging=true; sliderSetPos(e.clientX); document.addEventListener('mousemove',sliderMove); document.addEventListener('mouseup',sliderStop); }
+function sliderTouchStart(e) { sliderDragging=true; document.addEventListener('touchmove',sliderTouchMove,{passive:false}); document.addEventListener('touchend',sliderStop); }
+function sliderMove(e) { if(sliderDragging) sliderSetPos(e.clientX); }
+function sliderTouchMove(e) { e.preventDefault(); if(sliderDragging) sliderSetPos(e.touches[0].clientX); }
+function sliderStop() { sliderDragging=false; document.removeEventListener('mousemove',sliderMove); document.removeEventListener('mouseup',sliderStop); document.removeEventListener('touchmove',sliderTouchMove); document.removeEventListener('touchend',sliderStop); }
+function sliderSetPos(x) {
+  var c=document.getElementById('slider-main'); if(!c) return;
+  var r=c.getBoundingClientRect(), pct=Math.max(2,Math.min(98,((x-r.left)/r.width)*100));
+  var w=document.getElementById('slider-prima-wrap'), h=document.getElementById('slider-handle');
+  if(w) w.style.width=pct+'%'; if(h) h.style.left=pct+'%';
+}
+
+// ── DRAG & DROP SETUP ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  var drop = document.getElementById('foto-drop');
+  if (drop) {
+    drop.addEventListener('dragover',  function(e){ e.preventDefault(); drop.classList.add('drag-over'); });
+    drop.addEventListener('dragleave', function(){ drop.classList.remove('drag-over'); });
+    drop.addEventListener('drop',      handleFotoDrop);
+  }
+  var modal = document.getElementById('foto-modal');
+  if (modal) modal.addEventListener('click', function(e){ if(e.target===modal) closeMod(); });
+});
+
+// ── PLICOMETRIA ──────────────────────────────────────────
+function buildPlicoInputs() {
+  const wrap=document.getElementById('plico-inputs');
+  wrap.innerHTML=PLICHE.map(p=>`
+    <div class="plico-card">
+      <div class="plico-card-label">${PLICHE_LABELS[p]}</div>
+      <div class="plico-input-wrap">
+        <input class="plico-input" type="number" id="pl-${p}" step="0.5" min="0" placeholder="0" oninput="updatePlicoTotal()">
+        <span class="plico-unit">mm</span>
+      </div>
+    </div>`).join('');
+}
+function updatePlicoTotal() {
+  let sum=0;
+  PLICHE.forEach(p=>{ const v=parseFloat(document.getElementById('pl-'+p)?.value)||0; sum+=v; });
+  document.getElementById('plico-total-val').textContent=sum.toFixed(1)+' mm';
+  // Durnin & Womersley estimate (simplified, sum of 4: bicep/tricep/subscap/suprailiac) — here we use all 7
+  // Simple estimate: % grasso ~= (sum * 0.15 + 5) for fitness purposes
+  if (sum>0) {
+    const cd=get('client',{});
+    const pgcEst = estimatePGC(sum, cd.sesso||'m', cd.dob);
+    }
+}
+function estimatePGC(sum, sesso, dob) {
+  // Jackson-Pollock 7 pliche (simplified)
+  if (!dob) return null;
+  const age=Math.floor((new Date()-new Date(dob))/(365.25*864e5));
+  // D = 1.112 – (0.00043499 × Σ7) + (0.00000055 × Σ7²) – (0.00028826 × age) [uomo]
+  // D = 1.097 – (0.00046971 × Σ7) + (0.00000056 × Σ7²) – (0.00012828 × age) [donna]
+  let D;
+  if (sesso==='f') {
+    D = 1.097 - (0.00046971*sum) + (0.00000056*sum*sum) - (0.00012828*age);
+  } else {
+    D = 1.112 - (0.00043499*sum) + (0.00000055*sum*sum) - (0.00028826*age);
+  }
+  const pgc = (495/D) - 450;
+  return Math.max(3, Math.min(50, pgc));
+}
+function savePlico() {
+  const date=document.getElementById('plico-date').value;
+  if (!date) return;
+  const values={};
+  PLICHE.forEach(p=>{ const v=parseFloat(document.getElementById('pl-'+p)?.value)||0; values[p]=v; });
+  const sum=Object.values(values).reduce((a,b)=>a+b,0);
+  const cd=get('client',{});
+  const pgcEst=estimatePGC(sum, cd.sesso||'m', cd.dob);
+  const note=document.getElementById('plico-note').value;
+  const em=localStorage.getItem('nn2_current_email')||'';
+  const hist=getPlicoCliente(em);
+  hist.unshift({date, values, sum:+sum.toFixed(1), note, id:Date.now()});
+  setPlicoCliente(em, hist);
+  PLICHE.forEach(p=>{ const el=document.getElementById('pl-'+p); if(el) el.value=''; });
+  document.getElementById('plico-note').value='';
+  document.getElementById('plico-total-val').textContent='0 mm';
+  renderPlicoHist();
+  renderPlicoChart();
+}
+function renderPlicoHist() {
+  const em=localStorage.getItem('nn2_current_email')||'';
+  const hist=getPlicoCliente(em);
+  const list=document.getElementById('plico-hist-list');
+  if (!hist.length) { list.innerHTML='<div class="empty-state"><div class="e-icon">📐</div><p>Nessuna misurazione ancora.</p></div>'; return; }
+  list.innerHTML=hist.map((h,i)=>`
+    <div class="plico-hist-item">
+      <div class="plico-hist-date">${fDate(h.date)}</div>
+      <div style="flex:1">
+        <div class="plico-chips">
+          ${PLICHE.map(p=>h.values[p]?`<span class="plico-chip">${PLICHE_LABELS[p].substring(0,5)}: <strong>${h.values[p]}</strong>mm</span>`:'').join('')}
+          <span class="plico-total">Σ ${h.sum} mm</span>
+
+        </div>
+        ${h.note?`<div style="font-size:12px;font-weight:500;color:var(--text2);margin-top:6px;line-height:1.5">${h.note}</div>`:''}
+      </div>
+      <button class="btn-del" onclick="delPlico(${i})">🗑</button>
+    </div>`).join('');
+  renderPlicoChart();
+}
+function renderPlicoChart() {
+  const em=localStorage.getItem('nn2_current_email')||'';
+  const hist=getPlicoCliente(em).slice().reverse();
+  if (!hist.length) return;
+  const card=document.getElementById('plico-chart-card');
+  card.style.display='block';
+  const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#98b4a5',font:{size:11,family:'Nunito',weight:'600'}},grid:{color:'rgba(26,61,43,.06)'}},y:{ticks:{color:'#98b4a5',font:{size:11,family:'Nunito',weight:'600'}},grid:{color:'rgba(26,61,43,.06)'}}}};
+  mkChart('c-plico', {labels:hist.map(h=>fDate(h.date)), datasets:[{data:hist.map(h=>h.sum), borderColor:'#1a3d2b', backgroundColor:'rgba(26,61,43,.06)', tension:.3, fill:true}]}, opts);
+}
+function delPlico(i) { if(!confirm('Eliminare?'))return; const em=localStorage.getItem('nn2_current_email')||''; const h=getPlicoCliente(em); h.splice(i,1); setPlicoCliente(em,h); renderPlicoHist(); }
+
+// ── NOTE ─────────────────────────────────────────────────
+function saveNote() {
+  const text=document.getElementById('note-editor').value.trim(); if(!text) return;
+  const em=localStorage.getItem('nn2_current_email')||'';
+  const hist=getNoteCliente(em); hist.unshift({date:new Date().toISOString(), text, id:Date.now()});
+  setNoteCliente(em, hist);
+  document.getElementById('note-editor').value='';
+  document.getElementById('note-saved-label').textContent='Salvata: '+fDateTime(new Date().toISOString());
+  renderNoteHist();
+}
+function renderNoteHist() {
+  const em=localStorage.getItem('nn2_current_email')||'';
+  const hist=getNoteCliente(em);
+  const list=document.getElementById('note-hist-list');
+  if(!hist.length){list.innerHTML='<div class="empty-state"><div class="e-icon">📝</div><p>Nessuna nota salvata.</p></div>';return;}
+  list.innerHTML=hist.map((n,i)=>`
+    <div class="note-hist">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="note-hist-date">${fDateTime(n.date)}</div>
+        <button class="btn-del" onclick="delNote(${i})">🗑</button>
+      </div>
+      <div class="note-hist-text">${n.text.replace(/\n/g,'<br>')}</div>
+    </div>`).join('');
+}
+function delNote(i) { if(!confirm('Eliminare?'))return; const em=localStorage.getItem('nn2_current_email')||''; const h=getNoteCliente(em); h.splice(i,1); setNoteCliente(em,h); renderNoteHist(); }
+
+// ── CLIENT ───────────────────────────────────────────────
+function renderClient() {
+  const cd  = get('client', {});
+  const f   = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  f('e-nome', cd.nome); f('e-cognome', cd.cognome); f('e-dob', cd.dob);
+  f('e-altezza', cd.altezza); f('e-peso-init', cd.pesoInit); f('e-email', cd.email);
+  f('e-obiettivo', cd.obiettivo); f('e-allergie', cd.allergie);
+  f('e-patologie', cd.patologie); f('e-farmaci', cd.farmaci);
+  const age = cd.dob ? Math.floor((new Date() - new Date(cd.dob)) / (365.25 * 864e5)) : null;
+  const bmi = (cd.pesoInit && cd.altezza) ? (cd.pesoInit / ((cd.altezza / 100) ** 2)).toFixed(1) : null;
+  document.getElementById('dp-personal').innerHTML = rows([
+    ['Nome',           ((cd.nome||'') + ' ' + (cd.cognome||'')).trim() || '—'],
+    ['Email',          cd.email || '—'],
+    ['Telefono',       cd.telefono || '—'],
+    ['Data di nascita', cd.dob ? fDate(cd.dob) : '—'],
+    ['Età',       age != null ? age + ' anni' : '—'],
+    ['Sesso',          cd.sesso || '—'],
+    ['Professione',    cd.professione || '—'],
+  ]);
+  document.getElementById('dp-physical').innerHTML = rows([
+    ['Altezza',       cd.altezza  ? cd.altezza  + ' cm' : '—'],
+    ['Peso iniziale', cd.pesoInit ? cd.pesoInit + ' kg' : '—'],
+    ['BMI',           bmi || '—'],
+    ['Obiettivo',     cd.obiettivo || '—'],
+    ['Ob. secondari', cd.obiettivo_sec || '—'],
+    ['Motivazione',   cd.motivazione ? cd.motivazione + ' / 10' : '—'],
+    ['Sport',         cd.sport || '—'],
+    ['Stress',        cd.stress ? cd.stress + ' / 10' : '—'],
+    ['Regime alim.',  cd.regime || '—'],
+  ]);
+  document.getElementById('dp-clinical').innerHTML = rows([
+    ['Allergie/Intoll.', cd.allergie  || '—'],
+    ['Patologie',        cd.patologie || '—'],
+    ['Farmaci/Integr.',  cd.farmaci   || '—'],
+  ]);
+  updateTopbar();
+}
+function saveClient() {
+  const g  = id => document.getElementById(id)?.value;
+  const cd = get('client', {});
+  set('client', Object.assign({}, cd, {
+    nome: g('e-nome'), cognome: g('e-cognome'), dob: g('e-dob'),
+    altezza: g('e-altezza'), pesoInit: g('e-peso-init'), email: g('e-email'),
+    obiettivo: g('e-obiettivo'), allergie: g('e-allergie'),
+    patologie: g('e-patologie'), farmaci: g('e-farmaci'),
+  }));
+  renderClient();
+}
+function rows(arr) { return arr.map(function(r){ return '<div class="data-row"><div class="data-label">'+r[0]+'</div><div class="data-value">'+(r[1]||'—')+'</div></div>'; }).join(''); }
+
+// ── DOMANDE ──────────────────────────────────────────────
+function sendQ() {
+  const text = document.getElementById('ask-text').value.trim();
+  if (!text) return;
+  const cd   = get('client', {});
+  const name = (cd.nome + ' ' + (cd.cognome||'')).trim() || 'Cliente';
+  const clientEmail = cd.email || window._clienteEmail || '';
+  // Email nutrizionista: dalla config o dal getMyEmail
+  const nutriEmail = window._nutriEmail || getMyEmail() || 'nutrizione@neacea.com';
+  const subject = 'Domanda da ' + name + ' — Scheda Nutrizionale';
+  const body    = 'Da: ' + name + (clientEmail ? ' (' + clientEmail + ')' : '') + '\n\n' + text;
+  window.location.href = 'mailto:' + nutriEmail +
+    '?subject=' + encodeURIComponent(subject) +
+    '&body='    + encodeURIComponent(body);
+  document.getElementById('ask-text').value = '';
+  const s = document.getElementById('ask-sent');
+  s.style.display = 'block';
+  setTimeout(() => s.style.display = 'none', 5000);
+}
+
+// ── UTILS ────────────────────────────────────────────────
+function fDate(iso) { if(!iso)return'—'; try{return new Date(iso+'T12:00:00').toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return iso;} }
+function fDateTime(iso) { if(!iso)return'—'; try{return new Date(iso).toLocaleString('it-IT',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){return iso;} }
+function showSaved() { const el=document.getElementById('save-indicator'); el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2000); }
+
+// ── GENERA REPORT PDF ─────────────────────────────────────────
+
+
+
+
+// ── SWITCH TAB ────────────────────────────────────────────────
+function switchScanTab(tab) {
+  document.getElementById('panel-visbody').style.display = tab==='visbody'?'block':'none';
+  document.getElementById('panel-maltron').style.display  = tab==='maltron'?'block':'none';
+  document.getElementById('tab-visbody').classList.toggle('active', tab==='visbody');
+  document.getElementById('tab-maltron').classList.toggle('active', tab==='maltron');
+}
+
+// ── MALTRON HANDLER ───────────────────────────────────────────
+async function handleMaltron(files) {
+  var drop = document.getElementById('maltron-drop');
+  drop.querySelector('.drop-text').textContent = 'Elaborazione...';
+  var imported = 0;
+  for (var fi = 0; fi < files.length; fi++) {
+    try {
+      var pdf = await pdfjsLib.getDocument(await files[fi].arrayBuffer()).promise;
+      var testo = '';
+      for (var p = 1; p <= pdf.numPages; p++) {
+        var page = await pdf.getPage(p);
+        var content = await page.getTextContent();
+        testo += content.items.map(function(i){return i.str;}).join(' ') + '\n';
+      }
+      var d = estraiDatiMaltron(testo, files[fi].name);
+      var malts = get('maltrons', []);
+      if (!malts.find(function(m){return m.date===d.date&&m.filename===d.filename;})) {
+        malts.push(d);
+        malts.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+        set('maltrons', malts);
+        imported++;
+      }
+    } catch(e) { console.error('Maltron parse error:', e); }
+  }
+  renderMaltron(); renderCharts(); updateTopbar();
+  drop.querySelector('.drop-text').textContent = imported ? '✅ '+imported+' scan'+' importat'+(imported>1?'e':'a')+'!' : '⚠️ Nessun dato estratto';
+  setTimeout(function(){drop.querySelector('.drop-text').textContent='Carica report PDF Maltron BioScan';}, 3000);
+}
+
+// ── MALTRON PARSER ────────────────────────────────────────────
+function estraiDatiMaltron(testo, nomeFile) {
+  function n(p){ var m=testo.match(p); return m?parseFloat(m[1]):null; }
+  var data=null;
+  var dm=testo.match(/(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+  if(dm) data='20'+dm[3]+'-'+dm[2]+'-'+dm[1];
+  var peso=n(/Peso\s+([\d.]+)\s*Kg/i), bmi=n(/Body Mass Index \(BMI\)\s+([\d.]+)/i);
+  var rmr=n(/Resting Metabolic Rate\s+([\d]+)\s*kcal/i);
+  var bodyFat_kg=n(/Body Fat\s+([\d.]+)Kg/i), bodyFat_pct=n(/Body Fat\s+[\d.]+Kg\s+([\d.]+)%/i);
+  var ffm_kg=n(/Fat Free Mass \(FFM\)\s+([\d.]+)Kg/i);
+  var muscoloMass=n(/Muscle Mass \(MM\)\s+([\d.]+)kg/i);
+  var bcm=n(/Body Cell Mass \(BCM\)\s+([\d.]+)kg/i), ecm=n(/Extracellular Mass \(ECM\)\s+([\d.]+)kg/i);
+  var tbw_lt=n(/TBW [\d.]+%\s+([\d.]+)Lt/i), tbw_pct=n(/TBW ([\d.]+)%/i);
+  var ecw_lt=n(/ECW [\d.]+%[\s\S]{0,10}([\d.]+)Lt/i), icw_lt=n(/ICW [\d.]+%[\s\S]{0,10}([\d.]+)Lt/i);
+  var rapportoEI=n(/Rapporto E \/ I ([\d.]+)/i), excessFluido=n(/Eccesso Fluido ([\-\d.]+)Lt/i);
+  var dryWeight=n(/Dry Weight ([\d.]+)Kg/i), idratFFM=n(/Idratazione FFM ([\d.]+)%/i);
+  var glicogeno=n(/Glicogeno\s+([\d.]+)g/i), calcio=n(/Calcio\s+([\d.]+)g/i);
+  var proteina=n(/Proteina\s+([\d.]+)kg/i), potassio=n(/Potassio\s+([\d.]+)g/i);
+  var bmd_tot=n(/Total Body BMD[\s\S]{0,10}([\d.]+)\s*g\/cm2/i), bmc_tot=n(/Total Body BMC\s+([\d.]+)Kg/i);
+  var strengthIdx=n(/Strength Index[\s\S]{0,20}([\d.]+)\s+0\.85/i);
+  var fitnessScore=n(/Fitness Score[\s\S]{0,20}([\d.]+)\s+0\.75/i);
+  var indiceSalute=n(/Indice Salute[\s\S]{0,20}([\d.]+)\s+0\.8/i);
+  var fattyLiver=null;
+  if(testo.match(/Healthy\s+Mild\s+Moderate/i)){
+    if(testo.match(/Could lead to Cirrhosis|Cirrhosis of the liver/i)) fattyLiver='High';
+    else if(testo.match(/Moderately High[\s\S]{0,200}(damage|scarring)/i)) fattyLiver='Moderately High';
+    else if(testo.match(/Moderate[\s\S]{0,200}(symptoms|change)/i)) fattyLiver='Moderate';
+    else if(testo.match(/Mild[\s\S]{0,200}(change|early)/i)) fattyLiver='Mild';
+    else fattyLiver='Healthy';
+  }
+  var fase5=null,fase50=null,fase100=null,fase200=null;
+  var fm=testo.match(/Phase \(degrees\)[^\d]*(\d+\.\d+)[^\d]+[^\d]*(\d+\.\d+)[^\d]+[^\d]*(\d+\.\d+)[^\d]+[^\d]*(\d+\.\d+)/i);
+  if(fm){fase5=parseFloat(fm[1]);fase50=parseFloat(fm[2]);fase100=parseFloat(fm[3]);fase200=parseFloat(fm[4]);}
+  return {source:'maltron',date:data,filename:nomeFile,
+    peso:peso,bmi:bmi,rmr:rmr,bodyFat_kg:bodyFat_kg,bodyFat_pct:bodyFat_pct,
+    ffm_kg:ffm_kg,muscoloMass:muscoloMass,bcm:bcm,ecm:ecm,
+    tbw_lt:tbw_lt,tbw_pct:tbw_pct,ecw_lt:ecw_lt,icw_lt:icw_lt,
+    rapportoEI:rapportoEI,excessFluido:excessFluido,dryWeight:dryWeight,idratFFM:idratFFM,
+    glicogeno:glicogeno,calcio:calcio,proteina:proteina,potassio:potassio,
+    bmd_tot:bmd_tot,bmc_tot:bmc_tot,strengthIdx:strengthIdx,fitnessScore:fitnessScore,
+    indiceSalute:indiceSalute,fattyLiver:fattyLiver,
+    angoloFase:fase50,fase5:fase5,fase50:fase50,fase100:fase100,fase200:fase200};
+}
+
+// ── MALTRON RENDER ────────────────────────────────────────────
+function renderMaltron() {
+  var malts=get('maltrons',[]);
+  var ce=document.getElementById('maltron-count'); if(ce) ce.textContent=malts.length;
+  var list=document.getElementById('maltron-list'); if(!list) return;
+  if(!malts.length){list.innerHTML='<div class="empty-state"><div class="e-icon">📄</div><p>Nessuna scansione Maltron.</p></div>';return;}
+  var html='';
+  malts.forEach(function(m,i){
+    var chips=[
+      m.peso?'⚖️ '+m.peso+' kg':null, m.bodyFat_pct?'🟡 '+m.bodyFat_pct+'%':null,
+      m.ffm_kg?'💪 FFM '+m.ffm_kg+' kg':null, m.muscoloMass?'🏋️ MM '+m.muscoloMass+' kg':null,
+      m.bmi?'📐 BMI '+m.bmi:null, m.rmr?'🔥 '+m.rmr+' kcal':null,
+      m.tbw_lt?'💧 TBW '+m.tbw_lt+' lt':null, m.idratFFM?'💦 Idrat. '+m.idratFFM+'%':null,
+      m.angoloFase?'📐 Fase 50KHz: '+m.angoloFase+'°':null,
+      m.indiceSalute?'❤️ Salute '+m.indiceSalute:null,
+      m.fattyLiver?'🫀 Fegato: '+m.fattyLiver:null,
+    ].filter(Boolean);
+    html+='<div class="scan-item" style="flex-direction:column;align-items:flex-start;gap:10px;">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;width:100%;"><div class="scan-date">⚡ '+(m.date?fDate(m.date):'—')+' <span style="font-size:11px;color:var(--text3);margin-left:6px;">'+(m.filename||'')+'</span></div>';
+    html+='<button class="btn-del" onclick="delMaltron('+i+')">🗑</button></div>';
+    html+='<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    chips.forEach(function(ch){html+='<span style="background:var(--green-pale);border:1px solid var(--border);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;color:var(--green)">'+ch+'</span>';});
+    html+='</div>';
+    html+='<details style="width:100%;"><summary style="font-size:12px;font-weight:700;color:var(--green);cursor:pointer;">Dettaglio completo</summary>';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">';
+    var sezioni=[
+      {t:'💧 Fluid Status',d:[['TBW',m.tbw_lt,'lt'],['TBW %',m.tbw_pct,'%'],['ECW',m.ecw_lt,'lt'],['ICW',m.icw_lt,'lt'],['Rapporto E/I',m.rapportoEI,''],['Eccesso fluido',m.excessFluido,'lt'],['Dry Weight',m.dryWeight,'kg'],['Idratazione FFM',m.idratFFM,'%']]},
+      {t:'🧬 Body Composition',d:[['Body Fat',m.bodyFat_kg,'kg'],['Body Fat %',m.bodyFat_pct,'%'],['FFM',m.ffm_kg,'kg'],['Muscolo MM',m.muscoloMass,'kg'],['BCM',m.bcm,'kg'],['ECM',m.ecm,'kg'],['RMR',m.rmr,'kcal'],['BMI',m.bmi,'']]},
+      {t:'⚗️ Minerali',d:[['Glicogeno',m.glicogeno,'g'],['Calcio',m.calcio,'g'],['Proteina',m.proteina,'kg'],['Potassio',m.potassio,'g'],['BMD totale',m.bmd_tot,'g/cm²'],['BMC totale',m.bmc_tot,'kg']]},
+      {t:'❤️ Health',d:[['Strength Index',m.strengthIdx,''],['Fitness Score',m.fitnessScore,''],['Indice Salute',m.indiceSalute,''],['Fatty Liver',m.fattyLiver,'']]},
+      {t:'📐 Angolo di Fase',d:[['5 KHz',m.fase5,'°'],['50 KHz',m.fase50,'°'],['100 KHz',m.fase100,'°'],['200 KHz',m.fase200,'°']]},
+    ];
+    sezioni.forEach(function(sez){
+      var righe=sez.d.filter(function(r){return r[1]!=null;});
+      if(!righe.length) return;
+      html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">';
+      html+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">'+sez.t+'</div>';
+      righe.forEach(function(r){html+='<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:12px;"><span style="color:var(--text2)">'+r[0]+'</span><span style="font-weight:700;color:var(--green)">'+r[1]+(r[2]?' '+r[2]:'')+'</span></div>';});
+      html+='</div>';
+    });
+    html+='</div></details></div>';
+  });
+  list.innerHTML=html;
+}
+function delMaltron(i){
+  if(!confirm('Eliminare?')) return;
+  var m=get('maltrons',[]); m.splice(i,1); set('maltrons',m); renderMaltron(); renderCharts(); updateTopbar();
+}
+
+// ── NORMALIZE SCAN ────────────────────────────────────────────
+function normalizeScan(s) {
+  if(!s) return null;
+  return Object.assign({},s,{
+    pgc:s.pgc??s.bodyFat_pct??null, muscolare:s.muscolare??s.muscoloMass??null,
+    grassa:s.grassa??s.bodyFat_kg??null, bmi:s.bmi??null,
+    tassoMet:s.tassoMet??s.rmr??null, etaMet:s.etaMet??null,
+    ffm_kg:s.ffm_kg??null, bcm:s.bcm??null, ecm:s.ecm??null,
+    tbw_lt:s.tbw_lt??null, tbw_pct:s.tbw_pct??null,
+    ecw_lt:s.ecw_lt??null, icw_lt:s.icw_lt??null,
+    idratFFM:s.idratFFM??null, rapportoEI:s.rapportoEI??null,
+    angoloFase:s.angoloFase??null, strengthIdx:s.strengthIdx??null,
+    indiceSalute:s.indiceSalute??null, fattyLiver:s.fattyLiver??null,
+  });
+}
+
+// ── GENERA REPORT PDF ─────────────────────────────────────────
+function generaReport() {
+  var scans=get('scans',[]), malt=get('maltrons',[]), mPeso=get('m_peso',[]);
+  var em=localStorage.getItem('nn2_current_email')||'';
+  var visite=getVisteCliente(em), plicos=getPlicoCliente(em);
+  var noteArr=getNoteCliente(em); var note=noteArr.length?noteArr.map(function(n){return n.text;}).join(' | '):'';
+  var cd=get('client',{}), nome=((cd.nome||'')+' '+(cd.cognome||'')).trim()||'Cliente';
+  var oggi=new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'long',year:'numeric'});
+  var allR=scans.concat(malt).filter(function(s){return s.date;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var ultimaScan=normalizeScan(allR.length?allR[allR.length-1]:null);
+  var primaScan=normalizeScan(allR.length?allR[0]:null);
+  var pesoCombinato={};
+  scans.forEach(function(s){if(s.peso) pesoCombinato[s.date]=s.peso;});
+  malt.forEach(function(m){if(m.peso) pesoCombinato[m.date]=m.peso;});
+  mPeso.forEach(function(m){pesoCombinato[m.date]=m.val;});
+  var pesoData=Object.entries(pesoCombinato).sort(function(a,b){return a[0].localeCompare(b[0]);});
+  var p0=pesoData.length?pesoData[0][1]:null, pN=pesoData.length?pesoData[pesoData.length-1][1]:null;
+  var pV=visite.length?visite[0]:null;
+  var uV=visite.length?visite[visite.length-1]:null;
+  // Ottieni fino a 4 foto per visita
+  function getFotos(visita, max) {
+    if (!visita || !visita.fotos || !visita.fotos.length) return [];
+    return visita.fotos.slice(0, max).map(function(f){ return f.data || f.url || ''; }).filter(Boolean);
+  }
+  var fotePrima = getFotos(pV, 4);
+  var foteUltima = visite.length > 1 ? getFotos(uV, 4) : [];
+  function cr(l,v,u){if(v==null)return'';return'<div class="cr"><span class="cl">'+l+'</span><span class="cv">'+v+(u?' '+u:'')+'</span></div>';}
+  var css='body{font-family:Arial,sans-serif;color:#1a2820;font-size:13px}'+
+    '.pg{max-width:800px;margin:0 auto;padding:40px}'+
+    '.hd{display:flex;justify-content:space-between;border-bottom:3px solid #1a3a2a;padding-bottom:18px;margin-bottom:24px}'+
+    '.hl strong{display:block;font-size:18px;color:#1a3a2a}.hl{font-size:11px;color:#8fa89a;text-transform:uppercase}'+
+    '.hr{text-align:right;font-size:12px;color:#4a5e54}.hr strong{display:block;font-size:14px;color:#1a3a2a}'+
+    '.sc{margin-bottom:22px}.st{font-size:11px;font-weight:700;color:#c9a84c;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #e8f0eb}'+
+    '.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}'+
+    '.mc{background:#f2f6f3;border-radius:8px;padding:12px;text-align:center}'+
+    '.mv{font-size:19px;font-weight:700;color:#1a3a2a;margin-bottom:3px}'+
+    '.ml{font-size:10px;color:#8fa89a;font-weight:600;text-transform:uppercase}'+
+    '.dn{color:#2a7a2a;font-size:11px;font-weight:700;margin-top:2px}.dp{color:#c0392b;font-size:11px;font-weight:700;margin-top:2px}'+
+    '.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px}'+
+    '.cr{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f4f2;font-size:12px}'+
+    '.cl{color:#4a5e54}.cv{font-weight:700;color:#1a3a2a}'+
+    '.pt{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-end}'+
+    '.pe{background:#f2f6f3;border-radius:8px;padding:7px 10px;text-align:center;min-width:65px}'+
+    '.pe.l{background:#1a3a2a;color:white}.pv{font-size:14px;font-weight:700}.pd{font-size:10px;color:#8fa89a;margin-top:1px}.pe.l .pd{color:rgba(255,255,255,.6)}'+
+    '.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}'+
+    '.fc{border-radius:8px;overflow:hidden;border:1px solid #d4e0d8}'+
+    '.fl{background:#1a3a2a;color:white;font-size:10px;font-weight:700;padding:5px 10px;text-transform:uppercase}.fl.g{background:#c9a84c;color:#1a1200}'+
+    '.fi{width:100%;height:220px;object-fit:contain;background:#f2f6f3;display:block}'+
+    '.nf{width:100%;height:220px;background:#f2f6f3;display:flex;align-items:center;justify-content:center;color:#8fa89a}'+
+    '.nb{background:#f2f6f3;border-radius:8px;padding:12px;font-size:13px;line-height:1.7;color:#4a5e54;white-space:pre-wrap}'+
+    '.ft{margin-top:28px;padding-top:12px;border-top:1px solid #d4e0d8;display:flex;justify-content:space-between;font-size:11px;color:#8fa89a}'+
+    '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+  var h='<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><title>Report - '+nome+'</title><style>'+css+'</style></head><body><div class="pg">';
+  h+='<div class="hd"><div class="hl"><strong>Neacea Studio</strong>Report Nutrizionale</div><div class="hr"><strong>'+nome+'</strong>'+(cd.email||'')+'<br>'+oggi+'</div></div>';
+  if(ultimaScan){
+    var dP=p0!=null&&pN!=null?+(pN-p0).toFixed(1):null;
+    var dG=primaScan&&ultimaScan.pgc!=null&&primaScan.pgc!=null?+(ultimaScan.pgc-primaScan.pgc).toFixed(1):null;
+    var dM=primaScan&&ultimaScan.muscolare!=null&&primaScan.muscolare!=null?+(ultimaScan.muscolare-primaScan.muscolare).toFixed(1):null;
+    function mc(l,v,u,d,inv){
+      if(v==null) return '';
+      var ds='';
+      if(d!=null){var cls=d===0?'':(inv?(d<0?' class="dn"':' class="dp"'):(d>0?' class="dp"':' class="dn"'));ds='<div'+cls+'>'+(d>=0?'+':'')+d+(u?' '+u:'')+'</div>';}
+      return '<div class="mc"><div class="mv">'+v+(u?'<span style="font-size:11px;font-weight:400"> '+u+'</span>':'')+'</div><div class="ml">'+l+'</div>'+ds+'</div>';
+    }
+    h+='<div class="sc"><div class="st">&#128202; Misure Principali</div><div class="mg">';
+    h+=mc('Peso',pN,'kg',dP,true)+mc('% Grasso',ultimaScan.pgc,'%',dG,true)+mc('Massa muscolare',ultimaScan.muscolare,'kg',dM,false)+mc('BMI',ultimaScan.bmi,'',null,false);
+    h+='</div></div>';
+  }
+  if(pesoData.length>1){
+    h+='<div class="sc"><div class="st">Progressione Peso</div><div class="pt">';
+    pesoData.forEach(function(p,i){
+      var cls=i===pesoData.length-1?' l':'';
+      var ds=new Date(p[0]).toLocaleDateString('it-IT',{day:'2-digit',month:'short'});
+      h+='<div class="pe'+cls+'"><div class="pv">'+p[1]+' kg</div><div class="pd">'+ds+'</div></div>';
+    });
+    h+='</div></div>';
+  }
+  if(ultimaScan){
+    var cL=cr('Massa grassa',ultimaScan.grassa,'kg')+cr('Massa muscolare',ultimaScan.muscolare,'kg')+cr('% Grasso',ultimaScan.pgc,'%')+cr('BMI',ultimaScan.bmi,'')+cr('Tasso metabolico',ultimaScan.tassoMet,'kcal')+cr('Eta metabolica',ultimaScan.etaMet,'anni')+cr('Fat Free Mass',ultimaScan.ffm_kg,'kg');
+    var cR=cr('Body Cell Mass',ultimaScan.bcm,'kg')+cr('Extracell. Mass',ultimaScan.ecm,'kg')+cr('TBW',ultimaScan.tbw_lt,'lt')+cr('TBW %',ultimaScan.tbw_pct,'%')+cr('ECW',ultimaScan.ecw_lt,'lt')+cr('ICW',ultimaScan.icw_lt,'lt')+cr('Idratazione FFM',ultimaScan.idratFFM,'%')+cr('Rapporto E/I',ultimaScan.rapportoEI,'')+cr('Angolo fase 50KHz',ultimaScan.angoloFase,'gradi')+cr('Indice Salute',ultimaScan.indiceSalute,'')+cr('Fatty Liver',ultimaScan.fattyLiver,'');
+    if(cL||cR) h+='<div class="sc"><div class="st">&#128300; Composizione Corporea</div><div class="cg"><div>'+cL+'</div><div>'+cR+'</div></div></div>';
+  }
+  if(fotePrima.length || foteUltima.length){
+    h+='<div class="sc"><div class="st">&#128248; Foto Visite</div>';
+    function blocoFoto(visita, fotos, titolo, colore) {
+      if (!fotos.length) return '';
+      var d = visita ? new Date(visita.date).toLocaleDateString('it-IT') : '';
+      var peso = visita && visita.peso ? ' &middot; ' + visita.peso + ' kg' : '';
+      var grid = '<div style="display:grid;grid-template-columns:repeat(' + Math.min(fotos.length,2) + ',1fr);gap:8px;margin-top:6px;">';
+      fotos.forEach(function(src){
+        grid += '<img src="' + src + '" style="width:100%;border-radius:6px;object-fit:cover;aspect-ratio:3/4;">';
+      });
+      grid += '</div>';
+      return '<div style="margin-bottom:14px;"><div style="background:' + colore + ';color:white;font-size:10px;font-weight:700;padding:5px 10px;text-transform:uppercase;border-radius:6px 6px 0 0;">' + titolo + ' &mdash; ' + d + peso + '</div>' + grid + '</div>';
+    }
+    h += blocoFoto(pV, fotePrima, 'Prima visita', '#1a3a2a');
+    if (foteUltima.length) h += blocoFoto(uV, foteUltima, 'Ultima visita', '#c9a84c');
+    else if (fotePrima.length) h += '<div style="color:#8fa89a;font-size:12px;font-style:italic;">Solo una visita disponibile.</div>';
+    h += '</div>';
+  }
+  var ultiPl=plicos.length?plicos[plicos.length-1]:null;
+  if(ultiPl){
+    var ph='';
+    Object.entries(ultiPl.vals||{}).filter(function(e){return e[1];}).forEach(function(e){ph+='<div style="background:#f2f6f3;border-radius:8px;padding:8px 10px;"><div style="font-size:10px;color:#8fa89a;text-transform:uppercase;font-weight:600;margin-bottom:3px;">'+e[0].replace(/_/g,' ')+'</div><div style="font-size:14px;font-weight:700;color:#1a3a2a;">'+e[1]+' mm</div></div>';});
+    if(ph) h+='<div class="sc"><div class="st">&#128207; Plicometria</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">'+ph+'</div></div>';
+  }
+  if(note) h+='<div class="sc"><div class="st">&#128221; Note</div><div class="nb">'+note+'</div></div>';
+  h+='<div class="ft"><span>Neacea Studio &mdash; nutrizione@neacea.com</span><span>'+oggi+' &middot; Documento riservato</span></div>';
+  h+='</div></body></html>';
+  var w=window.open('','_blank');
+  w.document.write(h); w.document.close(); w.focus();
+  setTimeout(function(){w.print();},800);
+}
+
+// ── AGGIORNA renderAll E renderCharts PER MALTRON ─────────────
+var _origRenderAll = typeof window._maltronPatched === 'undefined' ? null : true;
+if (!window._maltronPatched) {
+  window._maltronPatched = true;
+  var _origRenderCharts = renderCharts;
+  renderCharts = function() {
+    _origRenderCharts();
+    var malts=get('maltrons',[]);
+    if(!malts.length) return;
+    var charts_obj = window.charts || {};
+    var opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#98b4a5',font:{size:11,family:'Nunito',weight:'600'}},grid:{color:'rgba(26,61,43,.06)'}},y:{ticks:{color:'#98b4a5',font:{size:11,family:'Nunito',weight:'600'}},grid:{color:'rgba(26,61,43,.06)'}}}};
+    // Grafico angolo di fase
+    var faseData=malts.filter(function(m){return m.angoloFase!=null;});
+    var cardFase=document.getElementById('card-fase');
+    if(faseData.length&&cardFase){
+      cardFase.style.display='block';
+      if(charts_obj['c-fase']) charts_obj['c-fase'].destroy();
+      var ctx=document.getElementById('c-fase');
+      if(ctx) charts_obj['c-fase']=new Chart(ctx,{type:'line',data:{labels:faseData.map(function(m){return fDate(m.date);}),datasets:[{data:faseData.map(function(m){return m.angoloFase;}),borderColor:'#16a085',backgroundColor:'rgba(22,160,133,.06)',tension:.3,fill:true,pointRadius:5}]},options:JSON.parse(JSON.stringify(opts))});
+    }
+  };
+  var _origUpdateStats = updateStats;
+  updateStats = function(scans) {
+    _origUpdateStats(scans);
+    var malts=get('maltrons',[]);
+    if(!malts.length) return;
+    var sv=function(id,v,u){var el=document.getElementById(id);if(el&&v!=null)el.innerHTML=v+(u?'<span>'+u+'</span>':'');};
+    var allD=scans.concat(malts.map(function(m){return{date:m.date,peso:m.peso,grassa:m.bodyFat_kg,muscolare:m.muscoloMass,pgc:m.bodyFat_pct,bmi:m.bmi,tassoMet:m.rmr};})).filter(function(s){return s.date;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+    if(!allD.length) return;
+    var last=allD[allD.length-1];
+    sv('sp-peso',last.peso); sv('sp-grassa',last.grassa); sv('sp-muscolare',last.muscolare);
+    sv('sp-pgc',last.pgc,'%'); sv('sp-bmi',last.bmi); sv('sp-tassomet',last.tassoMet,' kcal');
+    document.getElementById('sp-scans').textContent=allD.length;
+  };
+  var _origRenderAll2 = renderAll;
+  renderAll = function() { _origRenderAll2(); renderMaltron(); };
+}
+
+// ── EXPORT / IMPORT CLIENTE ──────────────────────────────────────
+function esportaCliente() {
+  const email = localStorage.getItem('nn2_current_email') || '';
+  const cd    = get('client', {});
+  const nome  = ((cd.nome||'') + '_' + (cd.cognome||'')).trim().toLowerCase().replace(/\s+/g,'_') || 'cliente';
+
+  const backup = {
+    version:   '1.0',
+    exportDate: new Date().toISOString(),
+    email:     email,
+    client:    cd,
+    scans:     get('scans', []),
+    maltrons:  get('maltrons', []),
+    misure:    {
+      peso:      get('m_peso', []),
+      vita:      get('m_vita', []),
+      fianchi:   get('m_fianchi', []),
+      muscolare: get('m_muscolare', []),
+    },
+    visite:    getVisteCliente(email),
+    plico:     getPlicoCliente(email),
+    notes:     getNoteCliente(email),
+  };
+
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = nome + '_neacea.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importaCliente(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('import-status');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const backup = JSON.parse(e.target.result);
+      if (!backup.version || !backup.client) throw new Error('File non valido');
+
+      const email = backup.email || backup.client.email || '';
+
+      // Ripristina tutto
+      set('client', backup.client);
+      if (backup.scans)    set('scans',    backup.scans);
+      if (backup.maltrons) set('maltrons', backup.maltrons);
+      if (backup.misure) {
+        if (backup.misure.peso)      set('m_peso',      backup.misure.peso);
+        if (backup.misure.vita)      set('m_vita',      backup.misure.vita);
+        if (backup.misure.fianchi)   set('m_fianchi',   backup.misure.fianchi);
+        if (backup.misure.muscolare) set('m_muscolare', backup.misure.muscolare);
+      }
+      if (backup.visite) setVisteCliente(email, backup.visite);
+      if (backup.plico)  setPlicoCliente(email, backup.plico);
+      if (backup.notes)  setNoteCliente(email,  backup.notes);
+
+      if (email) localStorage.setItem('nn2_current_email', email);
+
+      status.style.display = 'block';
+      status.style.color   = '#2a7a4e';
+      status.textContent   = '✓ Dati ripristinati correttamente — ' +
+        (backup.client.nome||'') + ' ' + (backup.client.cognome||'');
+
+      renderAll();
+      updateTopbar();
+    } catch(err) {
+      status.style.display = 'block';
+      status.style.color   = '#c0392b';
+      status.textContent   = '✗ Errore: ' + err.message;
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// drag/drop Maltron
+(function(){
+  var mDrop=document.getElementById('maltron-drop');
+  if(!mDrop) return;
+  mDrop.addEventListener('dragover',function(e){e.preventDefault();mDrop.classList.add('drag-over');});
+  mDrop.addEventListener('dragleave',function(){mDrop.classList.remove('drag-over');});
+  mDrop.addEventListener('drop',function(e){e.preventDefault();mDrop.classList.remove('drag-over');handleMaltron(e.dataTransfer.files);});
+})();
+
+// ══════════════════════════════════════════════════════════════════
+//  SHEET SYNC — Neacea Studio v4
+//  Tutte le funzioni che comunicano con Apps Script
+// ══════════════════════════════════════════════════════════════════
+
+// ── SELETTORE CLIENTE ────────────────────────────────────────────
+// Aggiunge UI in topbar per cercare o scegliere cliente
+(function initClientSelector() {
+  // Crea il pannello di selezione cliente
+  const panel = document.createElement('div');
+  panel.id = 'client-selector-panel';
+  panel.style.cssText = `
+    position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);
+    z-index:999;display:none;align-items:center;justify-content:center;
+  `;
+  panel.innerHTML = `
+    <div style="background:white;border-radius:16px;width:560px;max-width:95vw;max-height:80vh;
+                display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.25);overflow:hidden;">
+      <div style="background:#1a3d2b;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:white;">Seleziona Cliente</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;">Cerca per email o scegli dalla lista</div>
+        </div>
+        <button onclick="closeClientSelector()" style="background:rgba(255,255,255,.12);border:none;color:white;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;">✕</button>
+      </div>
+
+      <!-- CERCA PER EMAIL -->
+      <div style="padding:20px 24px;border-bottom:1px solid #e8e8e8;">
+        <div style="display:flex;gap:10px;">
+          <input id="cs-email-input" type="email" placeholder="email@cliente.it"
+            style="flex:1;border:1px solid #c4d9cd;border-radius:9px;padding:10px 14px;font-size:14px;font-family:Nunito,sans-serif;outline:none;"
+            onkeydown="if(event.key==='Enter')cercaClientePerEmail()">
+          <button onclick="cercaClientePerEmail()"
+            style="background:#1a3d2b;color:white;border:none;border-radius:9px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;">
+            Cerca
+          </button>
+        </div>
+        <div id="cs-search-result" style="margin-top:10px;font-size:13px;"></div>
+      </div>
+
+      <!-- LISTA CLIENTI -->
+      <div style="padding:16px 24px 8px;font-size:11px;font-weight:700;color:#98b4a5;text-transform:uppercase;letter-spacing:.08em;">
+        Tutti i clienti
+        <button onclick="caricaListaClienti()" style="margin-left:8px;background:none;border:none;color:#3d7a56;font-size:11px;font-weight:700;cursor:pointer;">↻ Aggiorna</button>
+      </div>
+      <div id="cs-lista" style="overflow-y:auto;flex:1;padding:0 24px 20px;">
+        <div style="color:#98b4a5;font-size:13px;padding:10px 0;">Caricamento...</div>
+      </div>
+
+      <!-- NUOVO CLIENTE MANUALE -->
+      <div style="border-top:1px solid #e8e8e8;padding:16px 24px;">
+        <button onclick="showNuovoCliente()"
+          style="width:100%;background:#f0f7f2;border:1px dashed #c4d9cd;border-radius:9px;
+                 padding:11px;font-size:13px;font-weight:700;color:#3d7a56;cursor:pointer;">
+          + Nuovo cliente senza anamnesi
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  // Pannello nuovo cliente manuale
+  const nuovoPanel = document.createElement('div');
+  nuovoPanel.id = 'nuovo-cliente-panel';
+  nuovoPanel.style.cssText = `
+    position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);
+    z-index:1000;display:none;align-items:center;justify-content:center;
+  `;
+  nuovoPanel.innerHTML = `
+    <div style="background:white;border-radius:16px;width:480px;max-width:95vw;
+                box-shadow:0 8px 40px rgba(0,0,0,.25);overflow:hidden;">
+      <div style="background:#1a3d2b;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:15px;font-weight:700;color:white;">Nuovo Cliente</div>
+        <button onclick="closeNuovoCliente()" style="background:rgba(255,255,255,.12);border:none;color:white;border-radius:8px;padding:5px 11px;cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;font-weight:700;color:#5a7a68;text-transform:uppercase;">Nome *</label>
+          <input id="nc-nome" type="text" placeholder="Mario" style="border:1px solid #c4d9cd;border-radius:8px;padding:9px 12px;font-size:14px;font-family:Nunito,sans-serif;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;font-weight:700;color:#5a7a68;text-transform:uppercase;">Cognome *</label>
+          <input id="nc-cognome" type="text" placeholder="Rossi" style="border:1px solid #c4d9cd;border-radius:8px;padding:9px 12px;font-size:14px;font-family:Nunito,sans-serif;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;font-weight:700;color:#5a7a68;text-transform:uppercase;">Email *</label>
+          <input id="nc-email" type="email" placeholder="mario@email.it" style="border:1px solid #c4d9cd;border-radius:8px;padding:9px 12px;font-size:14px;font-family:Nunito,sans-serif;outline:none;grid-column:1/-1;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;font-weight:700;color:#5a7a68;text-transform:uppercase;">Telefono</label>
+          <input id="nc-telefono" type="tel" placeholder="+39 333..." style="border:1px solid #c4d9cd;border-radius:8px;padding:9px 12px;font-size:14px;font-family:Nunito,sans-serif;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;font-weight:700;color:#5a7a68;text-transform:uppercase;">Data di nascita</label>
+          <input id="nc-dob" type="date" style="border:1px solid #c4d9cd;border-radius:8px;padding:9px 12px;font-size:14px;font-family:Nunito,sans-serif;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;font-weight:700;color:#5a7a68;text-transform:uppercase;">Sesso</label>
+          <select id="nc-sesso" style="border:1px solid #c4d9cd;border-radius:8px;padding:9px 12px;font-size:14px;font-family:Nunito,sans-serif;outline:none;">
+            <option value="">— seleziona —</option>
+            <option value="Maschile">Maschile</option>
+            <option value="Femminile">Femminile</option>
+          </select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;font-weight:700;color:#5a7a68;text-transform:uppercase;">Altezza (cm)</label>
+          <input id="nc-altezza" type="number" placeholder="170" style="border:1px solid #c4d9cd;border-radius:8px;padding:9px 12px;font-size:14px;font-family:Nunito,sans-serif;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;font-weight:700;color:#5a7a68;text-transform:uppercase;">Peso attuale (kg)</label>
+          <input id="nc-peso" type="number" step="0.1" placeholder="70.0" style="border:1px solid #c4d9cd;border-radius:8px;padding:9px 12px;font-size:14px;font-family:Nunito,sans-serif;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
+          <label style="font-size:11px;font-weight:700;color:#5a7a68;text-transform:uppercase;">Obiettivo principale</label>
+          <input id="nc-obiettivo" type="text" placeholder="es. Ricomposizione corporea" style="border:1px solid #c4d9cd;border-radius:8px;padding:9px 12px;font-size:14px;font-family:Nunito,sans-serif;outline:none;">
+        </div>
+      </div>
+      <div style="padding:0 24px 24px;display:flex;gap:10px;">
+        <button onclick="salvaNuovoCliente()"
+          style="flex:1;background:#1a3d2b;color:white;border:none;border-radius:9px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;">
+          Salva e apri scheda
+        </button>
+        <button onclick="closeNuovoCliente()"
+          style="background:#f0f5f4;border:1px solid #c4d9cd;border-radius:9px;padding:12px 18px;font-size:13px;font-weight:600;color:#5a7a68;cursor:pointer;">
+          Annulla
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(nuovoPanel);
+
+  // Aggiungi bottone "Cambia cliente" in topbar
+  const topbar = document.querySelector('.topbar');
+  if (topbar) {
+    const btn = document.createElement('button');
+    btn.className = 'topbar-btn';
+    btn.textContent = '👤 Clienti';
+    btn.onclick = openClientSelector;
+    btn.style.marginRight = '8px';
+    // Inserisce prima del bottone Report PDF
+    const reportBtn = topbar.querySelector('button:last-child');
+    topbar.insertBefore(btn, reportBtn);
+  }
+})();
+
+function openClientSelector() {
+  document.getElementById('client-selector-panel').style.display = 'flex';
+  caricaListaClienti();
+}
+function closeClientSelector() {
+  document.getElementById('client-selector-panel').style.display = 'none';
+}
+function showNuovoCliente() {
+  document.getElementById('client-selector-panel').style.display = 'none';
+  document.getElementById('nuovo-cliente-panel').style.display = 'flex';
+}
+function closeNuovoCliente() {
+  document.getElementById('nuovo-cliente-panel').style.display = 'none';
+  document.getElementById('client-selector-panel').style.display = 'flex';
+}
+
+// ── LISTA CLIENTI ────────────────────────────────────────────────
+async function caricaListaClienti() {
+  const lista = document.getElementById('cs-lista');
+  lista.innerHTML = '<div style="color:#98b4a5;font-size:13px;padding:10px 0;">Caricamento...</div>';
+  try {
+    const res  = await fetch(SHEET_API + '?action=getClienti');
+    const json = await res.json();
+    if (!json.success || !json.clienti.length) {
+      lista.innerHTML = '<div style="color:#98b4a5;font-size:13px;padding:10px 0;">Nessun cliente ancora.</div>';
+      return;
+    }
+    lista.innerHTML = json.clienti.map(c => `
+      <div onclick="selezionaCliente('${c.email}')"
+        style="display:flex;justify-content:space-between;align-items:center;
+               padding:12px 14px;border-radius:10px;cursor:pointer;margin-bottom:6px;
+               border:1px solid #e8efe8;transition:all .15s;"
+        onmouseover="this.style.background='#f0f7f2';this.style.borderColor='#c4d9cd';"
+        onmouseout="this.style.background='';this.style.borderColor='#e8efe8';">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#1a3d2b;">${c.nome} ${c.cognome}</div>
+          <div style="font-size:12px;color:#5a7a68;margin-top:2px;">${c.email}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:#98b4a5;">${c.fonte || ''}</div>
+          <div style="font-size:11px;color:#98b4a5;">${c.peso_attuale ? c.peso_attuale + ' kg' : ''}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    lista.innerHTML = '<div style="color:#c0392b;font-size:13px;padding:10px 0;">Errore connessione.</div>';
+  }
+}
+
+// ── CERCA PER EMAIL ──────────────────────────────────────────────
+async function cercaClientePerEmail() {
+  const email  = document.getElementById('cs-email-input').value.trim();
+  const result = document.getElementById('cs-search-result');
+  if (!email) return;
+  result.innerHTML = '<span style="color:#98b4a5;">Ricerca in corso...</span>';
+  try {
+    const res  = await fetch(SHEET_API + '?action=getCliente&email=' + encodeURIComponent(email));
+    const json = await res.json();
+    if (json.success) {
+      const c = json.cliente;
+      result.innerHTML = `
+        <div style="background:#f0f7f2;border:1px solid #c4d9cd;border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1a3d2b;">${c['Nome']||''} ${c['Cognome']||''}</div>
+            <div style="font-size:12px;color:#5a7a68;">${c['Email']||email}</div>
+          </div>
+          <button onclick="selezionaCliente('${c['Email']||email}')"
+            style="background:#1a3d2b;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">
+            Apri →
+          </button>
+        </div>`;
+    } else {
+      result.innerHTML = `<span style="color:#c0392b;">Cliente non trovato. <a href="#" onclick="document.getElementById('nc-email').value='${email}';showNuovoCliente();" style="color:#3d7a56;font-weight:700;">Crea nuovo →</a></span>`;
+    }
+  } catch(e) {
+    result.innerHTML = '<span style="color:#c0392b;">Errore connessione.</span>';
+  }
+}
+
+// ── SELEZIONA E CARICA CLIENTE ───────────────────────────────────
+async function selezionaCliente(email) {
+  closeClientSelector();
+
+  // Pulisce TUTTO il localStorage del cliente precedente prima di caricare il nuovo
+  pulisciLocalStorage();
+
+  localStorage.setItem('nn2_current_email', email);
+  document.getElementById('tb-name').textContent = 'Caricamento...';
+
+  // Carica dati cliente + scansioni + misure in parallelo dallo Sheet
+  await Promise.all([
+    caricaClienteRemoto(email),
+    sincronizzaDaSheet(email),
+  ]);
+
+  renderAll();
+  updateTopbar();
+}
+
+// Svuota dati cliente — tieni myemail, accounts, current_email e visite per-cliente
+function pulisciLocalStorage() {
+  const keep = ['nn2_myemail', 'nn2_accounts', 'nn2_current_email'];
+  const perCliente = ['nn2_visite_', 'nn2_plico_', 'nn2_notes_'];
+  Object.keys(localStorage)
+    .filter(k => k.startsWith('nn2_') && !keep.includes(k) && !perCliente.some(p => k.startsWith(p)))
+    .forEach(k => localStorage.removeItem(k));
+}
+
+async function sincronizzaDaSheet(email) {
+  try {
+    // Scansioni Visbody/Maltron
+    const resS = await fetch(SHEET_API, { method:'POST', body: JSON.stringify({ action:'getScansioni', email }) });
+    const jsonS = await resS.json();
+    // Svuota tutto prima di ricaricare
+    set('scans', []); set('maltrons', []);
+    if (jsonS.success && jsonS.scansioni.length) {
+      const visbody = [], maltron = [];
+      jsonS.scansioni.forEach(s => {
+        const scan = {
+          date:      s['Data scansione'] ? new Date(s['Data scansione']).toISOString().split('T')[0] : '',
+          filename:  s['Tipo'] || 'Scansione',
+          peso:      s['Peso (kg)']            || null,
+          grassa:    s['Massa grassa (kg)']    || null,
+          muscolare: s['Massa muscolare (kg)'] || null,
+          pgc:       s['% Grasso (PGC)']       || null,
+          bmi:       s['BMI']                  || null,
+          score:     s['Score']                || null,
+          vita:      s['Vita (cm)']            || null,
+          fianchi:   s['Fianchi (cm)']         || null,
+          etaMet:    s['Età metabolica']        || null,
+          tassoMet:  s['Tasso metabolico (kcal)'] || null,
+          ffm_kg:    s['FFM (kg)']             || null,
+          bcm:       s['BCM (kg)']             || null,
+          ecm:       s['ECM (kg)']             || null,
+          tbw_lt:    s['TBW (lt)']             || null,
+          tbw_pct:   s['TBW (%)']              || null,
+          ecw_lt:    s['ECW (lt)']             || null,
+          icw_lt:    s['ICW (lt)']             || null,
+          idratFFM:  s['Idratazione FFM (%)']  || null,
+          rapportoEI: s['Rapporto E/I']        || null,
+          angoloFase: s['Angolo fase (gradi)'] || null,
+          indiceSalute: s['Indice salute']     || null,
+          fattyLiver: s['Fatty Liver']         || null,
+          rmr:       s['Tasso metabolico (kcal)'] || null,
+        };
+        if ((s['Tipo'] || '').toLowerCase().includes('maltron')) {
+          scan.bodyFat_kg  = scan.grassa;
+          scan.bodyFat_pct = scan.pgc;
+          scan.muscoloMass = scan.muscolare;
+          maltron.push(scan);
+        } else {
+          visbody.push(scan);
+        }
+      });
+      if (visbody.length) set('scans', visbody);
+      if (maltron.length) set('maltrons', maltron);
+    }
+
+    // Visite gestite per-cliente in localStorage — non sovrascrivere
+
+    // Misure manuali
+    const resM = await fetch(SHEET_API, { method:'POST', body: JSON.stringify({ action:'getMisure', email }) });
+    const jsonM = await resM.json();
+    // Svuota sempre
+    ['peso','vita','fianchi','muscolare'].forEach(t => set('m_' + t, []));
+    if (jsonM.success && jsonM.misure.length) {
+      const byType = {};
+      jsonM.misure.forEach(m => {
+        const tipo = m.tipo || 'peso';
+        if (!byType[tipo]) byType[tipo] = [];
+        byType[tipo].push({ date: new Date(m.data).toISOString().split('T')[0], val: parseFloat(m.valore) });
+      });
+      Object.entries(byType).forEach(([tipo, arr]) => set('m_' + tipo, arr));
+    }
+  } catch(e) {
+    console.warn('Sync da Sheet fallita:', e);
+  }
+}
+
+// ── SALVA NUOVO CLIENTE MANUALE ──────────────────────────────────
+async function salvaNuovoCliente() {
+  const g = id => document.getElementById(id)?.value?.trim() || '';
+  const nome    = g('nc-nome');
+  const cognome = g('nc-cognome');
+  const email   = g('nc-email');
+  if (!nome || !cognome || !email) { alert('Nome, cognome ed email sono obbligatori.'); return; }
+
+  const btn = document.querySelector('#nuovo-cliente-panel button');
+  btn.textContent = 'Salvataggio...';
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch(SHEET_API, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:              'addClienteManuale',
+        nome, cognome, email,
+        telefono:            g('nc-telefono'),
+        data_nascita:        g('nc-dob'),
+        sesso:               g('nc-sesso'),
+        altezza:             g('nc-altezza'),
+        peso_attuale:        g('nc-peso'),
+        obiettivo_principale: g('nc-obiettivo'),
+      })
+    });
+    const json = await res.json();
+    if (json.success) {
+      closeNuovoCliente();
+      await selezionaCliente(email);
+      // Pulisci campi
+      ['nc-nome','nc-cognome','nc-email','nc-telefono','nc-dob','nc-sesso','nc-altezza','nc-peso','nc-obiettivo']
+        .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    } else {
+      alert('Errore: ' + (json.error || 'Sconosciuto'));
+    }
+  } catch(e) {
+    alert('Errore di connessione.');
+  } finally {
+    btn.textContent = 'Salva e apri scheda';
+    btn.disabled = false;
+  }
+}
+
+// ── SYNC AUTOMATICA SCANSIONI VERSO SHEET ───────────────────────
+// Intercetta il salvataggio scansioni Visbody/Maltron e le invia allo Sheet
+const _origHandleVisbody = handleVisbody;
+handleVisbody = async function(files) {
+  await _origHandleVisbody(files);
+  const email = localStorage.getItem('nn2_current_email');
+  if (!email) return;
+  const scans = get('scans', []);
+  if (!scans.length) return;
+  // Invia solo l'ultima scansione (appena importata)
+  const last = scans[scans.length - 1];
+  try {
+    await fetch(SHEET_API, { method: 'POST', body: JSON.stringify({
+      action: 'addScansione', email, tipo: 'Visbody',
+      data_scansione: last.date,
+      peso: last.peso, grassa: last.grassa, muscolare: last.muscolare,
+      pgc: last.pgc, bmi: last.bmi, score: last.score,
+      vita: last.vita, fianchi: last.fianchi,
+      eta_metabolica: last.etaMet, tasso_metabolico: last.tassoMet,
+    })});
+  } catch(e) { console.warn('Sync scansione Visbody fallita:', e); }
+};
+
+const _origHandleMaltron = handleMaltron;
+handleMaltron = async function(files) {
+  await _origHandleMaltron(files);
+  const email = localStorage.getItem('nn2_current_email');
+  if (!email) return;
+  const malts = get('maltrons', []);
+  if (!malts.length) return;
+  const last = malts[malts.length - 1];
+  try {
+    await fetch(SHEET_API, { method: 'POST', body: JSON.stringify({
+      action: 'addScansione', email, tipo: 'Maltron',
+      data_scansione: last.date,
+      peso: last.peso, grassa: last.bodyFat_kg, muscolare: last.muscoloMass,
+      pgc: last.bodyFat_pct, bmi: last.bmi,
+      tasso_metabolico: last.rmr,
+      ffm: last.ffm_kg, bcm: last.bcm, ecm: last.ecm,
+      tbw_lt: last.tbw_lt, tbw_pct: last.tbw_pct,
+      ecw_lt: last.ecw_lt, icw_lt: last.icw_lt,
+      idratazione_ffm: last.idratFFM, rapporto_ei: last.rapportoEI,
+      angolo_fase: last.angoloFase,
+      indice_salute: last.indiceSalute, fatty_liver: last.fattyLiver,
+    })});
+  } catch(e) { console.warn('Sync scansione Maltron fallita:', e); }
+};
+
+// ── SYNC MISURE MANUALI ──────────────────────────────────────────
+const _origAddManual = addManual;
+addManual = async function() {
+  _origAddManual();
+  const email = localStorage.getItem('nn2_current_email');
+  if (!email) return;
+  const type = document.getElementById('manual-type').value;
+  const val  = parseFloat(document.getElementById('manual-val').value);
+  const date = document.getElementById('manual-date').value;
+  if (!val || !date) return;
+  try {
+    await fetch(SHEET_API, { method: 'POST', body: JSON.stringify({
+      action: 'addMisura', email, tipo: type, valore: val,
+      unita: type === 'peso' ? 'kg' : 'cm', data: date,
+    })});
+  } catch(e) { console.warn('Sync misura fallita:', e); }
+};
+
+// ── SYNC NOTE NUTRIZIONISTA ──────────────────────────────────────
+const _origSaveNote = saveNote;
+saveNote = async function() {
+  _origSaveNote();
+  const email = localStorage.getItem('nn2_current_email');
+  if (!email) return;
+  const notes = get('notes', []);
+  if (!notes.length) return;
+  const tutte = notes.map(n => n.text).join('\n\n---\n\n');
+  try {
+    await fetch(SHEET_API, { method: 'POST', body: JSON.stringify({
+      action: 'updateNote', email, note: tutte,
+    })});
+  } catch(e) { console.warn('Sync note fallita:', e); }
+};
+
+// ── CARICA CLIENTE ALL'AVVIO SE GIÀ SELEZIONATO ─────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const savedEmail = localStorage.getItem('nn2_current_email');
+  if (savedEmail) {
+    await caricaClienteRemoto(savedEmail);
+    // Non risincronizziamo i dati ad ogni avvio per performance
+    // usa il bottone "Clienti" → seleziona per forzare sync
+  }
+});
+</script>
+</body>
+</html>
